@@ -1,0 +1,10 @@
+{
+  "name": "purpleclay-skills",
+  "version": "0.1.0",
+  "description": "Engineering, turbocharged",
+  "author": {
+    "name": "purpleclay"
+  },
+  "repository": "https://github.com/purpleclay/skills",
+  "license": "MIT"
+}

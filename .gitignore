@@ -1,0 +1,15 @@
+# Ignore everything and selectively allow files
+*
+
+!.envrc
+!.gitignore
+!.github/CODEOWNERS
+!.claude-plugin/*.json
+!docs/**/*
+!flake.lock
+!flake.nix
+!LICENSE
+!README.md
+
+# Recurse through sub-directories applying the same patterns
+!*/

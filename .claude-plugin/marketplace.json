@@ -1,0 +1,14 @@
+{
+  "name": "purpleclay",
+  "description": "Claude Code skills for faster, sharper software engineering",
+  "owner": {
+    "name": "purpleclay"
+  },
+  "plugins": [
+    {
+      "name": "purpleclay-skills",
+      "source": "./",
+      "description": "Engineering, turbocharged"
+    }
+  ]
+}
