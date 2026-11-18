@@ -4,12 +4,14 @@
 !.envrc
 !.gitignore
 !.github/CODEOWNERS
+!.github/workflows/*.yml
 !.claude-plugin/*.json
 !docs/**/*
 !flake.lock
 !flake.nix
 !LICENSE
 !README.md
+!skills/**/*
 
 # Recurse through sub-directories applying the same patterns
 !*/
