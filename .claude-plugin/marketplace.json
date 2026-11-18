@@ -1,6 +1,6 @@
 {
   "name": "purpleclay",
-  "description": "Claude Code skills for faster, sharper software engineering",
+  "description": "Skills for AI-based engineering loops. As an installable plugin",
   "owner": {
     "name": "purpleclay"
   },
@@ -8,7 +8,7 @@
     {
       "name": "purpleclay-skills",
       "source": "./",
-      "description": "Engineering, turbocharged"
+      "description": "Skills for AI-based engineering loops"
     }
   ]
 }
