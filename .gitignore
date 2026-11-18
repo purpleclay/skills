@@ -11,6 +11,7 @@
 !flake.nix
 !LICENSE
 !README.md
+!agents/**/*
 !skills/**/*
 
 # Recurse through sub-directories applying the same patterns
