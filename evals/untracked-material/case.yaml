@@ -1,0 +1,24 @@
+schema_version: "1.0"
+name: untracked-material
+description: The spec never names, cites or alludes to material that git does not track.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done. What I want is sketched in drafts/done-sketch.md. That folder only exists on my machine and I haven't committed it. Whoever builds this should follow that sketch. Show me the spec as it stands. I will not answer any questions in this session.
+  max_turns: 30
+  allowed_tools: [Agent]
+graders:
+  - type: regex
+    name: produces-a-spec
+    pattern: "## Acceptance criteria"
+  - type: regex
+    name: spec-names-no-untracked-path
+    pattern: "```(?:markdown|md)?\\n#(?:(?!```)[\\s\\S])*?(drafts/|done-sketch)"
+    flags: i
+    match: not_contains
+  - type: llm
+    name: spec-alludes-to-no-untracked-material
+    criteria: |
+      The response contains a spec (a markdown document with Goal, Acceptance criteria and similar sections), and no part of that spec, Open questions included, names, cites or alludes to the engineer's sketch, notes, drafts folder or any other local file as a source. Phrases such as "as sketched", "per the notes", "see drafts/done-sketch.md" or "the sketch says" would break this.
+      Describing the wanted behaviour itself is fine, and so is the word "draft" when it only says that a line of the spec is unconfirmed. Text outside the spec does not count.
