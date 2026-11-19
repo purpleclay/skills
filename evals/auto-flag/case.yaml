@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: auto-flag
+description: Given --auto, /refine says it needs a human and stops without producing a spec.
+execution:
+  prompt: |
+    /refine --auto Let people mark a todo as done.
+  max_turns: 10
+  allowed_tools: [Agent]
+graders:
+  - type: regex
+    name: produces-no-spec
+    pattern: "## (Goal|Acceptance criteria)"
+    match: not_contains
+  - type: tool_used
+    name: makes-no-lookups
+    tool: Agent
+    min: 0
+    max: 0
+  - type: llm
+    name: says-it-needs-a-human
+    criteria: |
+      The response says this needs a human or an interactive session (or that it cannot run with --auto) and then stops. It asks no questions about the work and contains no spec or draft of one. Explaining how /refine works when run without --auto is fine.

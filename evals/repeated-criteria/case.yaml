@@ -1,0 +1,18 @@
+schema_version: "1.0"
+name: repeated-criteria
+description: No acceptance criterion repeats another, even when the engineer says the same thing twice.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done. Here is what done means to me. `todo done 2` marks the second todo as done. After I mark a todo done, `todo list` shows it as done. Done todos look different from open ones when I list them. When I run `todo list` I can tell at a glance which todos are finished. Marking a todo done must not delete it. A done todo is still listed, just marked as done. Show me the spec as it stands. I will not answer any questions in this session.
+  max_turns: 30
+  allowed_tools: [Agent]
+graders:
+  - type: regex
+    name: produces-a-spec
+    pattern: "## Acceptance criteria"
+  - type: llm
+    name: no-repeated-criteria
+    criteria: |
+      The spec in the response has an Acceptance criteria section in which no criterion repeats another. A criterion repeats another when any test that checks the other would already fully check it. Partial overlap is fine: two criteria that share a setup but each check something the other does not are not repeats. A section with only one criterion meets this.

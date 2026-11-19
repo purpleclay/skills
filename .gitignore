@@ -7,6 +7,7 @@
 !.github/workflows/*.yml
 !.claude-plugin/*.json
 !docs/**/*
+!evals/**/*
 !flake.lock
 !flake.nix
 !LICENSE
@@ -16,3 +17,6 @@
 
 # Recurse through sub-directories applying the same patterns
 !*/
+
+# Eval run output
+evals/results/
