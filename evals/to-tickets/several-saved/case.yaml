@@ -1,11 +1,11 @@
 schema_version: "1.0"
 name: several-saved
-description: With no path and two saved specs, /to-ticket asks which one to publish and publishes nothing until the engineer answers.
+description: With no path and two saved specs, /to-tickets asks which one to publish and publishes nothing until the engineer answers.
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
-    /to-ticket
+    /to-tickets
   max_turns: 15
   allowed_tools: [Bash, Read]
 graders:

@@ -33,11 +33,7 @@ This skill needs a human. If the input contains `--auto`, say so and stop.
    - **Acceptance criteria**: observable behaviours. Challenge each one until it can be checked by a test or a command, and until it says nothing about implementation. "Works correctly" is not a criterion. When an answer is already covered by a criterion, sharpen that criterion instead of adding a new one.
    - **Out of scope**: name up to three adjacent things an implementer is most likely to do, and ask for each whether it is in or out.
    - **Constraints**: what holds however the code looks. Ask directly whether the work changes a public contract, migrates data or crosses a security boundary.
-5. Keep it one ticket. Suggest a split only for one of these reasons, and name the reason:
-   - part of it is irreversible and deserves its own review;
-   - it must land in stages to keep the main branch green;
-   - the parts are each worth merging alone.
-   Never split by size or estimate. If you split, refine the first ticket now and leave the rest as one line each.
+5. Keep it one spec. However large the work, refine all of it and never propose splitting it into several tickets or specs: `/to-tickets` splits it when it publishes.
 
 ## Done
 

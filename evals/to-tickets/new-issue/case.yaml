@@ -1,11 +1,11 @@
 schema_version: "1.0"
 name: new-issue
-description: Given only a spec path, /to-ticket creates a new issue with the spec's title and body unchanged, then deletes the spec.
+description: Given only a spec that fits in one ticket, /to-tickets shows no breakdown, asks nothing, creates a new issue with the spec's title and body unchanged, then deletes the spec.
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
-    /to-ticket specs/due-dates.md
+    /to-tickets specs/due-dates.md
   max_turns: 15
   allowed_tools: [Bash, Read]
 graders:
@@ -23,4 +23,15 @@ graders:
   - type: regex
     name: deletes-the-spec
     target: trace
-    pattern: '"name":"Bash","input":\{(?:"[^"]*":"(?:[^"\\]|\\.)*",)*"command":"(?=(?:[^"\\]|\\.)*?due-dates\.md)(?=(?:[^"\\]|\\.)*?\b(?:rm|unlink)\b)'
+    pattern: '"name":"Bash","input":\{(?:"[^"]*":"(?:[^"\\]|\\.)*",)*"command":"(?=(?:[^"\\]|\\.)*?due-dates\.md)(?=(?:[^"\\]|\\.)*?(?:\b|(?<=\\n))(?:rm|unlink)\b)'
+  # A breakdown is a table with a Blocks column, in the conversation's own text.
+  - type: regex
+    name: shows-no-breakdown
+    target: trace
+    pattern: '^\{"type":"assistant".*\|\s*Blocks\s*\|'
+    flags: m
+    match: not_contains
+  - type: regex
+    name: asks-nothing
+    pattern: '\?'
+    match: not_contains
