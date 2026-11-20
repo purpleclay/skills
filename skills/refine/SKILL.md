@@ -24,7 +24,7 @@ This skill needs a human. If the input contains `--auto`, say so and stop.
 
 ## Process
 
-1. If the input references a GitHub issue, fetch it with `gh issue view <number or URL, exactly as given> --json title,body,comments`. Treat its body as the starting point.
+1. If the input references a GitHub issue, fetch it with `gh issue view <number or URL, exactly as given> --json title,body,comments,url`. Treat its body as the starting point.
 2. Work in rounds. Before each round, send the scout every lookup the round depends on, and wait until all of them report. Then ask every question whose prerequisites are settled, numbered, at most five. Wait for the answers, then start the next round.
 3. When the scout cannot establish a fact, send it one narrower follow-up. If that also fails, list the item under Open questions.
 4. Drive towards the sections of the spec:
@@ -45,7 +45,16 @@ You are done when every criterion is checkable, out of scope has at least one en
 
 Before you show the spec, check each criterion in turn: could the code break it and still pass every other criterion's test? If not, it repeats another one. Fold it into the criterion that already covers it.
 
-Show the spec as one fenced markdown block and ask the engineer to confirm it. Once they confirm, write it to `<git-dir>/refine/<slug>.md`, where `git rev-parse --path-format=absolute --git-common-dir` gives `<git-dir>` and `<slug>` is the title in kebab case. If that file already exists, ask the engineer whether to replace it or pick a different slug. Report the path and stop. Do not publish anything.
+Show the spec as one fenced markdown block and ask the engineer to confirm it. Once they confirm, write it to `<git-dir>/refine/<slug>.md`, where `git rev-parse --path-format=absolute --git-common-dir` gives `<git-dir>` and `<slug>` is the title in kebab case. If that file already exists, ask the engineer whether to replace it or pick a different slug. If you started from a GitHub issue, begin the file with front matter that records the issue's `url`, so the spec can later replace that issue:
+
+```markdown
+---
+issue: <url>
+---
+
+```
+
+Otherwise write the spec alone. Report the path and stop. Do not publish anything.
 
 ## Spec
 
