@@ -1,0 +1,27 @@
+schema_version: "1.0"
+name: several-saved
+description: With no path and two saved specs, /to-ticket asks which one to publish and publishes nothing until the engineer answers.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-ticket
+  max_turns: 15
+  allowed_tools: [Bash, Read]
+graders:
+  # The stand-in gh writes this on the first publish.
+  - type: file_exists
+    name: publishes-nothing-before-a-pick
+    path: .eval-bin/attempt-1
+    exists: false
+  - type: regex
+    name: lists-the-due-date-spec
+    pattern: '(?:show-a-due-date-on-each-todo|due.{0,2} date on each todo)'
+    flags: i
+  - type: regex
+    name: lists-the-done-spec
+    pattern: '(?:mark-a-todo-as-done|mark a todo as done)'
+    flags: i
+  - type: regex
+    name: asks-which-one
+    pattern: '\?'

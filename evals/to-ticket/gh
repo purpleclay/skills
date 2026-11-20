@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Stands in for the GitHub CLI so these evals never reach GitHub. setup.sh copies it into each
+# case's .eval-bin/, and it keeps its state there for the graders: every call goes to `calls`,
+# every publish to `attempt-<n>`, and a publish that matches the `want-*` files to `published`.
+set -u
+dir=$(dirname "$0")
+echo "$*" >>"$dir/calls"
+
+case "${1:-} ${2:-}" in
+"auth status")
+  echo "github.com: Logged in to github.com account eval (keyring)"
+  exit 0
+  ;;
+"issue create" | "issue edit") ;;
+*)
+  echo "gh: this eval only supports auth status, issue create and issue edit" >&2
+  exit 1
+  ;;
+esac
+
+n=1
+while [ -e "$dir/attempt-$n" ]; do n=$((n + 1)); done
+touch "$dir/attempt-$n"
+
+verb=$2
+shift 2
+repo=acme/todo target="" title="" body="" body_file=""
+while [ $# -gt 0 ]; do
+  case $1 in
+  -t | --title) title=$2 && shift ;;
+  --title=*) title=${1#*=} ;;
+  -b | --body) body=$2 && shift ;;
+  --body=*) body=${1#*=} ;;
+  -F | --body-file) body_file=$2 && shift ;;
+  --body-file=*) body_file=${1#*=} ;;
+  -R | --repo) repo=$2 && shift ;;
+  --repo=*) repo=${1#*=} ;;
+  -*) ;;
+  *) target=$1 ;;
+  esac
+  shift
+done
+if [ "$body_file" = - ]; then
+  body=$(cat)
+elif [ -n "$body_file" ]; then
+  body=$(cat "$body_file")
+fi
+
+# The issue as owner/repo#number, or owner/repo#new for a new one.
+if [ "$verb" = create ]; then
+  issue="$repo#new"
+else
+  case $target in
+  https://github.com/*/issues/*)
+    path=${target#https://github.com/}
+    issue="${path%%/issues/*}#${path##*/issues/}"
+    ;;
+  *) issue="$repo#${target#\#}" ;;
+  esac
+fi
+
+if [ -e "$dir/fail" ]; then
+  echo "HTTP 502: Bad Gateway (https://api.github.com/graphql)" >&2
+  exit 1
+fi
+
+# GitHub ignores blank lines around a body, so they do not count as a change. sed drops the
+# leading ones, and $(...) the trailing ones.
+if [ "$issue" = "$(cat "$dir/want-issue")" ] &&
+  [ "$title" = "$(cat "$dir/want-title")" ] &&
+  [ "$(printf '%s\n' "$body" | sed '/./,$!d')" = "$(sed '/./,$!d' "$dir/want-body")" ]; then
+  touch "$dir/published"
+fi
+
+number=${issue##*#}
+[ "$number" = new ] && number=12
+echo "https://github.com/${issue%%#*}/issues/$number"

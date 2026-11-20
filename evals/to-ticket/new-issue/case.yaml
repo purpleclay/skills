@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: new-issue
+description: Given only a spec path, /to-ticket creates a new issue with the spec's title and body unchanged, then deletes the spec.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-ticket specs/due-dates.md
+  max_turns: 15
+  allowed_tools: [Bash, Read]
+graders:
+  # The stand-in gh writes this only for a new issue in acme/todo with the spec's exact title and body.
+  - type: file_exists
+    name: publishes-the-spec-as-a-new-issue
+    path: .eval-bin/published
+  # The stand-in gh writes attempt-<n> for each publish, so a second one could replace the right issue with the wrong text.
+  - type: file_exists
+    name: publishes-once
+    path: .eval-bin/attempt-2
+    exists: false
+  # file_exists sees only files the run creates, so the trace has to show a Bash command that
+  # names the spec and runs rm or unlink, in any order.
+  - type: regex
+    name: deletes-the-spec
+    target: trace
+    pattern: '"name":"Bash","input":\{(?:"[^"]*":"(?:[^"\\]|\\.)*",)*"command":"(?=(?:[^"\\]|\\.)*?due-dates\.md)(?=(?:[^"\\]|\\.)*?\b(?:rm|unlink)\b)'

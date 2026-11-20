@@ -1,0 +1,20 @@
+schema_version: "1.0"
+name: typed-issue
+description: An issue number typed after the spec path wins over the issue the spec records, and front matter is never published.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-ticket specs/due-dates.md 4
+  max_turns: 15
+  allowed_tools: [Bash, Read]
+graders:
+  # The stand-in gh writes this only for issue 4 in acme/todo with the spec's exact title and body.
+  - type: file_exists
+    name: replaces-the-typed-issue
+    path: .eval-bin/published
+  # The stand-in gh writes attempt-<n> for each publish, so a second one could replace the right issue with the wrong text.
+  - type: file_exists
+    name: publishes-once
+    path: .eval-bin/attempt-2
+    exists: false
