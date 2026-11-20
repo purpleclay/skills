@@ -1,11 +1,11 @@
 schema_version: "1.0"
 name: nothing-saved
-description: With no path and no saved spec, /to-ticket says there is nothing to publish and never runs gh.
+description: With no path and no saved spec, /to-tickets says there is nothing to publish and never runs gh.
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
-    /to-ticket
+    /to-tickets
   max_turns: 15
   allowed_tools: [Bash, Read]
 graders:
@@ -16,5 +16,5 @@ graders:
     exists: false
   - type: regex
     name: says-there-is-nothing-to-publish
-    pattern: '(?:nothing to publish|no (?:saved )?specs?\b)'
+    pattern: '(?:nothing to publish|no (?:saved )?specs?\b|(?:couldn.t|could not|didn.t|did not) find (?:a|any) (?:saved )?spec)'
     flags: i

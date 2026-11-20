@@ -2,13 +2,14 @@
 
 A regression suite for `/refine`. Each case runs `/refine` three times in a small throwaway Go repo, and passes only when all three runs do.
 
-| Case                 | Fails when                                                                  |
-| -------------------- | --------------------------------------------------------------------------- |
-| `auto-flag`          | `/refine --auto` does anything other than say it needs a human and stop     |
-| `no-file-paths`      | the spec names a file in the repository, which goes stale as the code moves |
-| `repeated-criteria`  | an acceptance criterion repeats another                                     |
-| `scout-lookups`      | the main conversation reads repository files instead of asking the scout    |
-| `untracked-material` | the spec names, cites or alludes to files that git does not track           |
+| Case                 | Fails when                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `auto-flag`          | `/refine --auto` does anything other than say it needs a human and stop                     |
+| `no-file-paths`      | the spec names a file in the repository, which goes stale as the code moves                 |
+| `no-split`           | it proposes splitting large work into several tickets, or leaves part of it out of the spec |
+| `repeated-criteria`  | an acceptance criterion repeats another                                                     |
+| `scout-lookups`      | the main conversation reads repository files instead of asking the scout                    |
+| `untracked-material` | the spec names, cites or alludes to files that git does not track                           |
 
 ## Running
 
@@ -18,7 +19,7 @@ From the repository root:
 claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --no-publish -j 4
 ```
 
-It prints a pass or fail for each case and a summary table, and exits non-zero if any case fails. A full run takes about two minutes and costs about $2.20.
+It prints a pass or fail for each case and a summary table, and exits non-zero if any case fails. A full run takes about three minutes and costs about $2.60.
 
 - `--scaffold` runs each case's `scaffold.sh`, which builds the repo the case runs in.
 - `--ablation none` skips the extra run without the plugin, since this suite does not compare `/refine` with plain Claude.

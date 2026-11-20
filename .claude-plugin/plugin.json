@@ -1,10 +1,17 @@
 {
   "name": "purpleclay-skills",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Skills for AI-based engineering loops",
   "author": {
     "name": "purpleclay"
   },
   "repository": "https://github.com/purpleclay/skills",
-  "license": "MIT"
+  "license": "MIT",
+  "skills": [
+    "./skills/refine",
+    "./skills/to-tickets"
+  ],
+  "agents": [
+    "./agents/scout.md"
+  ]
 }
