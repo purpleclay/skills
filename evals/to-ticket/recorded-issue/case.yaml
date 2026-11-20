@@ -1,0 +1,20 @@
+schema_version: "1.0"
+name: recorded-issue
+description: With no issue typed, /to-ticket replaces the issue the spec records, in the repository that issue belongs to, and never publishes the front matter.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-ticket specs/due-dates.md
+  max_turns: 15
+  allowed_tools: [Bash, Read]
+graders:
+  # The stand-in gh writes this only for issue 7 in other-org/other-repo with the spec's exact title and body.
+  - type: file_exists
+    name: replaces-the-recorded-issue
+    path: .eval-bin/published
+  # The stand-in gh writes attempt-<n> for each publish, so a second one could replace the right issue with the wrong text.
+  - type: file_exists
+    name: publishes-once
+    path: .eval-bin/attempt-2
+    exists: false

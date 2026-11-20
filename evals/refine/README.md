@@ -1,4 +1,4 @@
-# Evals
+# `/refine` evals
 
 A regression suite for `/refine`. Each case runs `/refine` three times in a small throwaway Go repo, and passes only when all three runs do.
 
@@ -15,7 +15,7 @@ A regression suite for `/refine`. Each case runs `/refine` three times in a smal
 From the repository root:
 
 ```sh
-claude plugin eval . --scaffold --ablation none --judge-model sonnet --no-publish -j 4
+claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --no-publish -j 4
 ```
 
 It prints a pass or fail for each case and a summary table, and exits non-zero if any case fails. A full run takes about two minutes and costs about $2.20.
@@ -25,7 +25,7 @@ It prints a pass or fail for each case and a summary table, and exits non-zero i
 - `--judge-model sonnet` grades the judgement calls with Sonnet. The default, Haiku, failed specs that were fine.
 - `--no-publish` keeps the report on your machine. Without it, the report is published to claude.ai.
 
-The first run asks you to trust the plugin. Reports land in `evals/results/`, which git ignores.
+The first run asks you to trust the plugin. Reports land in `evals/refine/results/`, which git ignores.
 
 ## Layout
 
