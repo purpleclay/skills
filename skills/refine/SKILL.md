@@ -26,7 +26,7 @@ This skill needs a human. If the input contains `--auto`, say so and stop.
 ## Process
 
 1. If the input references a GitHub issue, fetch it with `gh issue view <number or URL, exactly as given> --json title,body,comments,url`. Treat its body as the starting point.
-2. Work in rounds, so the engineer answers while the scout researches. In each round's message, after the table of the last round's answers, if there is one, say what the lookups that reported since the last round found. Then ask at most three questions whose prerequisites are settled, questions asked again counting towards the three. Open each with its number and a label of two or three words, never one, in bold, such as `**2 · Done todos**`, then ask it, then end with one line in italics on what the answer decides, such as `*Decides: whether done todos stay in the list.*` Number questions across the whole interview, so a number always means the same question. In the same turn, send the scout every lookup that later rounds depend on, with `run_in_background: true`, and ask without waiting for them to report. Never ask a question before the lookups it depends on have reported. If every remaining question depends on a lookup that is still running, wait for it instead of asking. When a lookup reports while you wait for the engineer's answers, reply in one short line that you are waiting for their answers. Do not repeat the questions or say what it found: keep that for the next round. Wait for the answers, then start the next round.
+2. Work in rounds, so the engineer answers while the scout researches. In each round's message, after the table of the last round's answers, if there is one, say what the lookups that reported since the last round found. Then ask at most three questions whose prerequisites are settled, questions asked again counting towards the three, laid out as in **Questions** below. Number questions across the whole interview, so a number always means the same question. In the same turn, send the scout every lookup that later rounds depend on, with `run_in_background: true`, and ask without waiting for them to report. Never ask a question before the lookups it depends on have reported. If every remaining question depends on a lookup that is still running, wait for it instead of asking. When a lookup reports while you wait for the engineer's answers, reply in one short line that you are waiting for their answers. Do not repeat the questions or say what it found: keep that for the next round. Wait for the answers, then start the next round.
 3. When the scout cannot establish a fact, send it one narrower follow-up. If that also fails, list the item under Open questions.
 4. Drive towards the sections of the spec:
    - **Goal**: what changes, for whom, and why.
@@ -35,6 +35,18 @@ This skill needs a human. If the input contains `--auto`, say so and stop.
    - **Out of scope**: name up to three adjacent things an implementer is most likely to do, and ask for each whether it is in or out.
    - **Constraints**: what holds however the code looks. For whether the work changes a public contract, migrates data or crosses a security boundary, ask the scout what you need to judge it, then propose yes or no for each, with a one-line reason based on what the code does, and ask the engineer to confirm or correct them. The spec records the engineer's answer.
 5. Keep it one spec. However large the work, refine all of it and never propose splitting it into several tickets or specs: `/to-tickets` splits it when it publishes.
+
+## Questions
+
+Lay out every question like this, with a blank line between its parts: its number and a label of two or three words, never one, in bold, then the question, then one line in italics on what the answer decides. Between neighbouring questions, put a line of 80 `─` characters, with a blank line either side. Put none before the first question or after the last.
+
+```markdown
+**2 · Done todos**
+
+Once a todo is done, should it still appear in `todo list`?
+
+*Decides: whether done todos stay in the list.*
+```
 
 ## Done
 
