@@ -1,0 +1,18 @@
+schema_version: "1.0"
+name: proposes-constraints
+description: When the work clearly changes a public contract, /refine proposes "yes" with a reason for the engineer to confirm, instead of asking the engineer to decide.
+context:
+  scaffold_script: scaffold.sh
+  # The first round, already asked. It holds no skill text, so the reply below loads the current /refine.
+  # The reply settles everything but the constraints, so the next round has to take them up.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine Here are my answers to the questions you just asked. It's for me and anyone else who uses the tool, new reads better next to done, which is coming soon. If I run todo new milk and then todo list, milk is listed. If I run todo add milk, it prints unknown command and exits with 2. The README and the usage message should say new, and there's no hint for add, that's out of scope.
+  max_turns: 30
+  allowed_tools: [Agent]
+graders:
+  - type: llm
+    name: proposes-a-public-contract-change
+    criteria: |
+      The response gives its own answer that this work changes a public contract, with a reason, such as that people or scripts that run `todo add` will break, and asks the engineer to confirm or correct that answer. It also gives its own answer, with a reason, for whether the work migrates data and for whether it crosses a security boundary. A response that only asks the engineer whether the work changes a public contract, migrates data or crosses a security boundary, without giving its own answers, does not meet this.

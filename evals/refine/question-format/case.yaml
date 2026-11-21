@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: question-format
+description: The first round asks at most three questions, each opening with a number and a short label and ending with what the answer decides.
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done.
+  max_turns: 30
+  allowed_tools: [Agent]
+graders:
+  - type: regex
+    name: labels-its-questions
+    pattern: '\*\*1 · [^*\n]+\*\*'
+  - type: regex
+    name: asks-at-most-three
+    pattern: '\*\*4 · '
+    match: not_contains
+  - type: llm
+    name: each-question-says-what-it-decides
+    criteria: |
+      The response asks its questions under numbered items, and an item may hold more than one question sentence. Next to each item's number sits a short label of two or three words, and each item ends with a line that says what the answer to it decides.

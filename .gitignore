@@ -20,3 +20,5 @@
 
 # Eval run output
 evals/*/results/
+# Conversations that cases resuming a history_file write next to it
+evals/*/*/00000000-*
