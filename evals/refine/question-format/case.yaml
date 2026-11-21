@@ -1,6 +1,6 @@
 schema_version: "1.0"
 name: question-format
-description: The first round asks at most three questions, each opening with a number and a short label of more than one word and ending with an italic "Decides:" line on what the answer decides.
+description: The first round asks at most three questions, each with a bold number and a short label of more than one word, the question and an italic "Decides:" line on what the answer decides, separated by blank lines, with a line of 80 "─" between neighbouring questions.
 context:
   scaffold_script: scaffold.sh
 execution:
@@ -26,10 +26,24 @@ graders:
     target: trace
     pattern: '\*\*\d+ · (?:[^\s*]+|[^\s*]+(?: [^\s*]+){4,})\*\*'
     match: not_contains
-  # The round is one JSON string in the trace, so each question runs to the next question or
-  # the end of the string, and must end there with an italic "*Decides: ...*" line.
+  # The round is one JSON string in the trace, where a newline is written \n. The number and
+  # label, the question and the "Decides:" line are each separated from the next by a blank line.
+  - type: regex
+    name: separates-the-parts-of-each-question
+    target: trace
+    pattern: '\*\*\d+ · [^*]+\*\*(?!\\n\\n(?:[^\\]|\\[^n]))|(?<!\\n\\n)\*Decides:'
+    match: not_contains
+  # Each question runs to the next question or the end of the string, and must end there with an
+  # italic "*Decides: ...*" line, before any separator.
   - type: regex
     name: each-question-ends-with-what-it-decides
     target: trace
-    pattern: '\*\*\d+ · [^*]+\*\*(?:(?!\*\*\d+ · )(?:[^"\\]|\\.))*?(?<!\\n\*Decides: (?:[^*\\]|\\.)*[^*]\*(?:\\n)*)(?=(?:\\n)*(?:\*\*\d+ · |"))'
+    pattern: '\*\*\d+ · [^*]+\*\*(?:(?!\*\*\d+ · )(?:[^"\\]|\\.))*?(?<!\\n\*Decides: (?:[^*\\]|\\.)*[^*]\*(?:\\n)*(?:─+(?:\\n)*)?)(?=(?:\\n)*(?:─+(?:\\n)*)?(?:\*\*\d+ · |"))'
+    match: not_contains
+  # After each "Decides:" line comes either the end of the message, or a blank line, 80 "─", a
+  # blank line and the next question. A "─" anywhere else is a separator out of place.
+  - type: regex
+    name: separates-neighbouring-questions
+    target: trace
+    pattern: '\*Decides: (?:[^*"\\]|\\[^n])*\*(?!\\n\\n─{80}\\n\\n\*\*\d+ · |(?:\\n)*")|(?<!─|\*Decides: (?:[^*"\\]|\\[^n])*\*\\n\\n)─'
     match: not_contains
