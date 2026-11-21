@@ -12,7 +12,10 @@ execution:
   max_turns: 30
   allowed_tools: [Agent]
 graders:
+  # Lookups run in the background, and each one that reports after the round is asked gets a
+  # one-line reply, so the round itself is read from the trace rather than the last message.
   - type: llm
     name: proposes-a-public-contract-change
+    focus: trace
     criteria: |
-      The response gives its own answer that this work changes a public contract, with a reason, such as that people or scripts that run `todo add` will break, and asks the engineer to confirm or correct that answer. It also gives its own answer, with a reason, for whether the work migrates data and for whether it crosses a security boundary. A response that only asks the engineer whether the work changes a public contract, migrates data or crosses a security boundary, without giving its own answers, does not meet this.
+      In the main conversation, a message that asks the engineer questions gives its own answer that this work changes a public contract, with a reason, such as that people or scripts that run `todo add` will break, and asks the engineer to confirm or correct that answer. It also gives its own answer, with a reason, for whether the work migrates data and for whether it crosses a security boundary. A conversation that only asks the engineer whether the work changes a public contract, migrates data or crosses a security boundary, without giving its own answers, does not meet this.
