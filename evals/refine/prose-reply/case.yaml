@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: prose-reply
+description: A dictated reply that answers out of order and skips a question is read back in a table under the right questions, and the skipped question is asked again under the same number and label.
+context:
+  scaffold_script: scaffold.sh
+  # The first round, already asked. It holds no skill text, so the reply below loads the current /refine.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine Here are my answers to the questions you just asked, dictated. Undoing is out, if I mark something done by mistake I can just add it again. Oh and to mark one done I'd type todo done and its number, so todo done 2, and it doesn't need to print anything, the todo is just done.
+  max_turns: 30
+  allowed_tools: [Agent]
+graders:
+  - type: regex
+    name: reads-back-in-a-table
+    pattern: '\|\s*Question\s*\|\s*What I took from your reply\s*\|'
+  - type: regex
+    name: marks-the-skipped-question
+    pattern: '\|[^\n|]*2 · Done todos[^\n|]*\|\s*Not answered'
+  - type: regex
+    name: asks-the-skipped-question-again
+    pattern: 'Not answered[\s\S]*\*\*2 · Done todos\*\*'
+  - type: llm
+    name: matches-answers-to-questions
+    criteria: |
+      The response has a table that reads back the engineer's reply question by question. In it, the answer about marking a todo done with `todo done` and its number sits in the row for "1 · Done command", the answer that undo is out sits in the row for "3 · Undo", and the row for "2 · Done todos" says it was not answered. Extra detail in a row, such as what the number refers to, is fine.
