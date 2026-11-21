@@ -1,6 +1,6 @@
 schema_version: "1.0"
 name: question-format
-description: The first round asks at most three questions, each opening with a number and a short label and ending with what the answer decides.
+description: The first round asks at most three questions, each opening with a number and a label of more than one word and ending with a "Decides:" line on what the answer decides.
 context:
   scaffold_script: scaffold.sh
 execution:
@@ -9,14 +9,26 @@ execution:
   max_turns: 30
   allowed_tools: [Agent]
 graders:
+  # Lookups run in the background, and each one that reports after the round is asked gets a
+  # one-line reply, so the round itself is read from the trace rather than the last message.
   - type: regex
     name: labels-its-questions
+    target: trace
     pattern: '\*\*1 · [^*\n]+\*\*'
   - type: regex
     name: asks-at-most-three
+    target: trace
     pattern: '\*\*4 · '
     match: not_contains
-  - type: llm
+  - type: regex
+    name: labels-are-not-one-word
+    target: trace
+    pattern: '\*\*\d+ · [^\s*]+\*\*'
+    match: not_contains
+  # The round is one JSON string in the trace, so a question that reaches the next question,
+  # or the end of the string, without a "*Decides:" line lacks one.
+  - type: regex
     name: each-question-says-what-it-decides
-    criteria: |
-      The response asks its questions under numbered items, and an item may hold more than one question sentence. Next to each item's number sits a short label of two or three words, and each item ends with a line that says what the answer to it decides.
+    target: trace
+    pattern: '\*\*\d+ · [^*]+\*\*(?:(?!\*Decides:)(?:[^"\\]|\\.))*?(?:\*\*\d+ · |")'
+    match: not_contains
