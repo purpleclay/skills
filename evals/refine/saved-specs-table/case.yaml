@@ -1,0 +1,42 @@
+schema_version: "1.0"
+name: saved-specs-table
+description: With no input, /refine shows the saved specs in a table, an in-progress one with its round and one saved before /refine recorded state as ready to publish, offers to start a new spec and starts no interview.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine
+  max_turns: 15
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  - type: regex
+    name: shows-a-table
+    pattern: '\|\s*#\s*\|\s*Title\s*\|\s*State\s*\|\s*Last worked on\s*\|'
+  - type: regex
+    name: shows-the-in-progress-spec-with-its-round
+    pattern: '\|[^\n]*Mark a todo as done[^\n]*\|\s*In progress, round 2\s*\|'
+    flags: i
+  - type: regex
+    name: shows-the-older-spec-as-ready
+    pattern: '\|[^\n]*due.{0,2} date on each todo[^\n]*\|\s*Ready to publish\s*\|'
+    flags: i
+  - type: regex
+    name: lists-the-most-recent-first
+    pattern: 'Mark a todo as done[\s\S]*due.{0,2} date on each todo'
+    flags: i
+  - type: regex
+    name: offers-a-new-spec
+    pattern: 'new spec'
+    flags: i
+  - type: tool_used
+    name: makes-no-lookups
+    tool: Agent
+    min: 0
+    max: 0
+  - type: regex
+    name: asks-no-interview-question
+    target: trace
+    pattern: '\*\*1 · '
+    match: not_contains

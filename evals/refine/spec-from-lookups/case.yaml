@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: spec-from-lookups
+description: Asked to point the implementer at the code, /refine sends its lookups through the scout, loads no repository files in the main conversation, and shows a spec that names no repository file paths.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done. Look up how the code works today so the spec tells the implementer where to start, then show me the spec as it stands. I will not answer any questions in this session.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # How it looks the code up.
+  - type: tool_used
+    name: asks-the-scout
+    tool: Agent
+    input_match: "purpleclay-skills:scout"
+  # Subagent calls carry a parent_tool_use_id, so a null one means the main conversation made the call.
+  # The skill lists, reads and saves specs in the git directory's refine folder, and runs git to find
+  # it and to check what is tracked. Any other read, or a shell command that does not mention git or
+  # names a repository file outside that tracking check, fails.
+  - type: regex
+    name: main-conversation-reads-no-files
+    target: trace
+    pattern: '^\{"type":"assistant".*"type":"tool_use","id":"[^"]*","name":"(?:NotebookRead"|(?:Read|Grep|Glob)","input":\{(?![^}]*"(?:file_)?path":"[^"]*/\.git/refine\b)|Bash","input":\{(?:"[^"]*":"(?:[^"\\]|\\.)*",)*"command":"(?!git ls-files --error-unmatch )(?:(?!(?:[^"\\]|\\.)*\bgit\b)|(?=(?:[^"\\]|\\.)*?(?:\.go\b|go\.mod|internal/|README|git (?:show|log|grep|cat-file)\b)))).*"parent_tool_use_id":null'
+    flags: m
+    match: not_contains
+  # What it writes down.
+  - type: regex
+    name: produces-a-fenced-spec
+    pattern: "```(?:markdown|md)?\\n# [\\s\\S]*## Acceptance criteria"
+  - type: regex
+    name: spec-names-no-file-paths
+    pattern: "```(?:markdown|md)?\\n#(?:(?!```)[\\s\\S])*?(\\.go\\b|go\\.mod|internal/|README\\.md)"
+    match: not_contains

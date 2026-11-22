@@ -1,0 +1,25 @@
+schema_version: "1.0"
+name: no-saved-specs
+description: With no input and no saved specs, /refine asks what to refine, and shows no table.
+runs: 3
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine
+  max_turns: 15
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  - type: regex
+    name: shows-no-table
+    pattern: '\|\s*Title\s*\|'
+    match: not_contains
+  - type: tool_used
+    name: makes-no-lookups
+    tool: Agent
+    min: 0
+    max: 0
+  - type: llm
+    name: asks-what-to-refine
+    criteria: |
+      The response asks the engineer what piece of work they want to refine, and asks no other question about the work. Remarks about the environment, such as git not being available, do not count.

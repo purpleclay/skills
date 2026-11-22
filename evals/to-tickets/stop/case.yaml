@@ -1,6 +1,8 @@
 schema_version: "1.0"
 name: stop
 description: When the engineer says stop at a breakdown, /to-tickets publishes nothing, saves no tickets and leaves the spec as it was.
+tags: [smoke]
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:

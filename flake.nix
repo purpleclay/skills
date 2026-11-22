@@ -57,6 +57,11 @@
             inherit (pre-commit-check) shellHook;
             buildInputs = buildInputs ++ pre-commit-check.enabledPackages;
           };
+
+          # The eval sandbox can't reach a git outside the Nix store, so the evals run in this shell.
+          devShells.evals = mkShell {
+            buildInputs = buildInputs ++ [git];
+          };
         }
     );
 }

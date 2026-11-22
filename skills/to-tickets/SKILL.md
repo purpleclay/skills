@@ -13,8 +13,10 @@ Input: $ARGUMENTS
 
 ## Pick the spec
 
+A spec whose front matter has `state: in progress` is still being refined. Never list, mention or publish one. Only if the input gives its path, say that `/refine` is still refining it and stop without running `gh`.
+
 1. If the input gives a path, publish that file.
-2. Otherwise, if `/refine` saved a spec earlier in this session, publish that one.
+2. Otherwise, if `/refine` saved a spec ready to publish earlier in this session, publish that one.
 3. Otherwise list the `.md` files directly inside `<git-dir>/refine/`, where `git rev-parse --path-format=absolute --git-common-dir` gives `<git-dir>`, and ask the engineer which one to publish. If there are none, say there is nothing to publish and stop without running `gh`.
 
 The spec's tickets directory is its path with `.md` replaced by `.tickets`. If that directory exists, the engineer has already approved a breakdown of this spec: go straight to **Publish a breakdown**, and do not propose or ask about one again.
@@ -79,13 +81,9 @@ blocked-by: <the numbers of the tickets that block it, separated by spaces, or n
 - Public contract change: yes / no
 - Data migration: yes / no
 - Security boundary: yes / no
-
-## Open questions
-
-- <The spec's open questions that concern this ticket. Leave out this heading when there are none.>
 ```
 
-Every open question of the spec goes into each ticket it concerns. No ticket mentions another ticket, the spec or the breakdown. GitHub links them through issue dependencies.
+No ticket mentions another ticket, the spec or the breakdown. GitHub links them through issue dependencies.
 
 ## Publish one ticket
 

@@ -1,6 +1,7 @@
 schema_version: "1.0"
 name: rerun
 description: With a saved breakdown whose first ticket is published, /to-tickets publishes only the other two without asking, makes them depend on the tickets that block them, then deletes the spec and its tickets.
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:

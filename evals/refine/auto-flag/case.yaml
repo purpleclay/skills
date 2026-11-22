@@ -1,6 +1,7 @@
 schema_version: "1.0"
 name: auto-flag
 description: Given --auto, /refine says it needs a human and stops without producing a spec.
+runs: 1
 execution:
   prompt: |
     /refine --auto Let people mark a todo as done.

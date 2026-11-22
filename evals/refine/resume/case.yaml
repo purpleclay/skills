@@ -1,0 +1,49 @@
+schema_version: "1.0"
+name: resume
+description: Picking an in-progress spec from the table recaps its last round, asks its unanswered question again under the same number and label, and asks no answered question again or reuses a number.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+  # /refine has already shown the table of saved specs. It holds no skill text, so the reply below
+  # loads the current /refine. The in-progress spec stopped after round 2, where 4 was answered and
+  # 5 was not.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine I'll pick up number 1 from the table you just showed me.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # Lookups run in the background, and each one that reports after the round is asked gets a
+  # one-line reply, so the round itself is read from the trace rather than the last message.
+  - type: regex
+    name: recaps-the-answered-question
+    target: trace
+    pattern: '\|[^\n|]*4 · Done todos listed[^\n|]*\|\s*(?!Not answered)[^\s|]'
+  - type: regex
+    name: recaps-the-unanswered-question
+    target: trace
+    pattern: '\|[^\n|]*5 · Done marker[^\n|]*\|\s*Not answered'
+  - type: regex
+    name: asks-the-unanswered-question-again
+    target: trace
+    pattern: '\*\*5 · Done marker\*\*'
+  # A question laid out to be asked is its bold number and label followed by a blank line.
+  - type: regex
+    name: asks-no-answered-question-again
+    target: trace
+    pattern: '\*\*[1-4] · [^*]+\*\*\\n\\n'
+    match: not_contains
+  - type: regex
+    name: reuses-no-number
+    target: trace
+    pattern: '\*\*5 · (?!Done marker\*\*)'
+    match: not_contains
+  # The resumed interview keeps saving to the spec it picked up, rather than starting a new one: a
+  # Write or Edit of it, or a Bash command that names it and writes into it with sed, tee, a redirect
+  # or a script.
+  - type: regex
+    name: saves-to-the-same-spec
+    target: trace
+    pattern: '"name":"(?:(?:Write|Edit)","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*/\.git/refine/mark-a-todo-as-done\.md")|Bash","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?:(?=(?:[^"\\]|\\.)*?(?:sed -i|\btee\b|\.write\(|write_text\())(?=(?:[^"\\]|\\.)*?mark-a-todo-as-done\.md)|(?:[^"\\]|\\.)*?>>?\s*(?:\\")?[^\s"\\]*mark-a-todo-as-done\.md)))'

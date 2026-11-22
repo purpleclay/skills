@@ -1,13 +1,14 @@
 schema_version: "1.0"
 name: no-split
 description: However large the work, /refine keeps all of it in one spec and never proposes splitting it into several tickets.
+runs: 3
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
     /refine Let people sync their todos between computers. That means a server that stores each account's todos, accounts with a login, a `todo sync` command, and moving everyone's existing local todos onto the server, which deletes the local file afterwards and cannot be undone. It is a lot of work, and it has to land in stages to keep main green. Show me the spec as it stands. I will not answer any questions in this session.
   max_turns: 30
-  allowed_tools: [Agent]
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
 graders:
   - type: regex
     name: produces-a-spec
@@ -15,4 +16,4 @@ graders:
   - type: llm
     name: one-spec-for-all-of-it
     criteria: |
-      The response shows one spec for all of the work, and neither proposes nor asks about splitting the work into several tickets or specs. It leaves no part of the work for a later ticket or spec. Recording as a constraint that the work lands in stages is fine, and so are open questions about parts of the work.
+      The response shows one spec for all of the work, and neither proposes nor asks about splitting the work into several tickets or specs. It leaves no part of the work for a later ticket or spec. Recording as a constraint that the work lands in stages is fine, and so are open questions about parts of the work. So is saying that `/to-tickets` splits the spec into stages or tickets when it publishes it, since that is not a proposal to split it now.

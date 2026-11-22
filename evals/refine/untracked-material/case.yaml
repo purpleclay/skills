@@ -1,13 +1,14 @@
 schema_version: "1.0"
 name: untracked-material
 description: The spec never names, cites or alludes to material that git does not track.
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:
   prompt: |
     /refine Let people mark a todo as done. What I want is sketched in drafts/done-sketch.md. That folder only exists on my machine and I haven't committed it. Whoever builds this should follow that sketch. Show me the spec as it stands. I will not answer any questions in this session.
   max_turns: 30
-  allowed_tools: [Agent]
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
 graders:
   - type: regex
     name: produces-a-spec

@@ -35,15 +35,6 @@ check() {
     fi
   fi
 
-  # questions-kept: every want-questions line is in at least one published issue.
-  if [ -e "$dir/want-questions" ]; then
-    if grep -vxFf "$dir/.bodies" "$dir/want-questions" >/dev/null; then
-      rm -f "$dir/questions-kept"
-    else
-      touch "$dir/questions-kept"
-    fi
-  fi
-
   # misformatted: an issue that lacks one of the spec's sections.
   for f in "$dir"/issues/*; do
     [ -e "$f" ] || continue
