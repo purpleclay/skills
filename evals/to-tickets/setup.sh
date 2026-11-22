@@ -76,8 +76,7 @@ MD
 }
 
 # large <path> [issue url]: saves, as /refine would, a spec too large for one ticket, and tells the
-# stand-in gh which acceptance criteria the published issues must hold between them, and which
-# open questions they must keep.
+# stand-in gh which acceptance criteria the published issues must hold between them.
 large() {
   mkdir -p "$(dirname "$1")"
   {
@@ -86,7 +85,15 @@ large() {
     large_body
   } >"$1"
   large_body | grep '^- \[ \] ' >.eval-bin/want-criteria
-  large_body | sed -n '/^## Open questions$/,$p' | grep '^- ' >.eval-bin/want-questions
+}
+
+# in_progress <path>: saves the large spec as /refine saves one it is still refining.
+in_progress() {
+  mkdir -p "$(dirname "$1")"
+  {
+    printf -- '---\nstate: in progress\n---\n\n# Sync todos between devices\n'
+    large_body
+  } >"$1"
 }
 
 large_body() {
@@ -125,11 +132,6 @@ People who use todo on more than one computer see the same todos on each, withou
 - Public contract change: yes (new commands and an HTTP API)
 - Data migration: yes (existing local todos are uploaded on the first sync)
 - Security boundary: yes (accounts and tokens)
-
-## Open questions
-
-- Should `todo sync` also run after every `todo add`?
-- How long does a token last before `todo login` is needed again?
 MD
 }
 

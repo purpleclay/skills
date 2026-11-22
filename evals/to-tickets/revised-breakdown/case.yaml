@@ -1,6 +1,7 @@
 schema_version: "1.0"
 name: revised-breakdown
 description: When the engineer rejects a breakdown and says what is wrong, /to-tickets proposes a new one that fixes it, and publishes that one once it is approved.
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:

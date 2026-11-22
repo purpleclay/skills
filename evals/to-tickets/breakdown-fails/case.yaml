@@ -1,6 +1,7 @@
 schema_version: "1.0"
 name: breakdown-fails
 description: When GitHub rejects the second ticket of an approved breakdown, /to-tickets stops without retrying, and keeps the spec and the tickets, with the first recorded as published.
+runs: 3
 context:
   scaffold_script: scaffold.sh
 execution:

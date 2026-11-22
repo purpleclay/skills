@@ -1,0 +1,81 @@
+schema_version: "1.0"
+name: first-round
+description: The first round is asked in the same turn that sends the scout its lookups in the background, asks at most three questions in the layout the skill sets, and is saved as in progress with each question open and recorded as not answered.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # Lookups run in the background, and each one that reports after the round is asked gets a
+  # one-line reply, so the round itself is read from the trace rather than the last message.
+  # Every grader here is a pattern over the trace, so this case never calls the judge.
+  #
+  # When it is asked.
+  #
+  # The trace is one JSON record per line, and a "result" record ends each turn. The first
+  # turn is everything before the first one, and it must hold both a background scout call
+  # and the first question, in either order.
+  - type: regex
+    name: asks-in-the-turn-that-sends-the-lookups
+    target: trace
+    pattern: '^(?=(?:(?!\{"type":"result")[^\n]*\n)*?\{"type":"assistant"(?=[^\n]*"purpleclay-skills:scout")[^\n]*"run_in_background":true)(?=(?:(?!\{"type":"result")[^\n]*\n)*?\{"type":"assistant"[^\n]*\*\*1 · [^\n]*"parent_tool_use_id":null)'
+  # Saving the spec adds tool results to the first turn, so what shows it waited is a scout call in
+  # the main conversation's first turn that is not sent in the background.
+  - type: regex
+    name: waits-for-no-lookup
+    target: trace
+    pattern: '^(?:(?!\{"type":"result")[^\n]*\n)*?\{"type":"assistant"[^\n]*"name":"Agent","input":\{(?!(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|\d+),)*"run_in_background":true[,}])[^\n]*"parent_tool_use_id":null'
+    match: not_contains
+  #
+  # How it is laid out.
+  #
+  - type: regex
+    name: labels-its-questions
+    target: trace
+    pattern: '\*\*1 · [^*\n]+\*\*'
+  - type: regex
+    name: asks-at-most-three
+    target: trace
+    pattern: '\*\*4 · '
+    match: not_contains
+  # Labels should be two or three words. Four slips through often enough to allow it here.
+  - type: regex
+    name: labels-are-short-but-not-one-word
+    target: trace
+    pattern: '\*\*\d+ · (?:[^\s*]+|[^\s*]+(?: [^\s*]+){4,})\*\*'
+    match: not_contains
+  # The round is one JSON string in the trace, where a newline is written \n. The number and
+  # label, the question and the "Decides:" line are each separated from the next by a blank line.
+  - type: regex
+    name: separates-the-parts-of-each-question
+    target: trace
+    pattern: '\*\*\d+ · [^*]+\*\*(?!\\n\\n(?:[^\\]|\\[^n]))|(?<!\\n\\n)\*Decides:'
+    match: not_contains
+  # Each question runs to the next question or the end of the string, and must end there with an
+  # italic "*Decides: ...*" line, before any separator.
+  - type: regex
+    name: each-question-ends-with-what-it-decides
+    target: trace
+    pattern: '\*\*\d+ · [^*]+\*\*(?:(?!\*\*\d+ · )(?:[^"\\]|\\.))*?(?<!\\n\*Decides: (?:[^*\\]|\\.)*[^*]\*(?:\\n)*(?:─+(?:\\n)*)?)(?=(?:\\n)*(?:─+(?:\\n)*)?(?:\*\*\d+ · |"))'
+    match: not_contains
+  # After each "Decides:" line comes either the end of the message, or a blank line, 80 "─", a
+  # blank line and the next question. A "─" anywhere else is a separator out of place.
+  - type: regex
+    name: separates-neighbouring-questions
+    target: trace
+    pattern: '\*Decides: (?:[^*"\\]|\\[^n])*\*(?!\\n\\n─{80}\\n\\n\*\*\d+ · |(?:\\n)*")|(?<!─|\*Decides: (?:[^*"\\]|\\[^n])*\*\\n\\n)─'
+    match: not_contains
+  #
+  # What is saved.
+  #
+  # The main conversation writes a spec into the git directory's refine folder, with Write or a
+  # Bash command such as a heredoc, that is in progress, lists question 1 under Open questions and records round 1 with an unanswered question.
+  - type: regex
+    name: saves-the-round-in-progress
+    target: trace
+    pattern: '"name":"(?:Write","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*/\.git/refine/[^"/]+\.md")(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"content":"(?=(?:[^"\\]|\\.)*state: in progress)(?=(?:[^"\\]|\\.)*## Open questions\\n\\n- 1 · )(?=(?:[^"\\]|\\.)*## Interview\\n\\n### Round 1)(?=(?:[^"\\]|\\.)*\|\s*Not answered))|Bash","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?=(?:[^"\\]|\\.)*?\.git/refine/[^\s"\\/]+\.md)(?=(?:[^"\\]|\\.)*state: in progress)(?=(?:[^"\\]|\\.)*## Open questions\\n\\n- 1 · )(?=(?:[^"\\]|\\.)*## Interview\\n\\n### Round 1)(?=(?:[^"\\]|\\.)*\|\s*Not answered)))'

@@ -1,0 +1,19 @@
+schema_version: "1.0"
+name: reads-idea-back
+description: The first question of the first round reads the idea back as the goal for the engineer to confirm or correct, instead of asking what the goal is.
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let people mark a todo as done.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # The one judgement call about the first round. It has the same prompt as first-round and is kept
+  # apart from it so that first-round stays free of the judge.
+  - type: llm
+    name: reads-the-idea-back-as-the-goal
+    focus: trace
+    criteria: |
+      This is a log of a conversation, one JSON record per line, with some records elided. The first round of questions is the first assistant text, or "result" field, that holds a bold numbered question such as "**1 · ...**". In that round, the first question reads the goal back as letting people mark a todo as done, in words close to those, and asks the engineer to confirm or correct it. It may also ask about what the idea leaves out, such as who the work is for or why it matters.

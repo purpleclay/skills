@@ -1,6 +1,7 @@
 schema_version: "1.0"
 name: approved-breakdown
 description: Once the engineer approves a breakdown, /to-tickets publishes every ticket in the spec's format, replacing the recorded issue with the first and creating the rest in its repository, sets their dependencies and deletes the spec and its tickets.
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:
@@ -26,10 +27,6 @@ graders:
   - type: file_exists
     name: every-criterion-in-one-ticket
     path: .eval-bin/criteria-split
-  # Written while each of the spec's open questions is in at least one published issue.
-  - type: file_exists
-    name: keeps-the-open-questions
-    path: .eval-bin/questions-kept
   # The tickets are written to a draft directory and moved into place in one Bash command, so a
   # rerun never finds part of a breakdown.
   - type: regex

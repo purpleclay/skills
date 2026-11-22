@@ -1,6 +1,8 @@
 schema_version: "1.0"
 name: new-issue
 description: Given only a spec that fits in one ticket, /to-tickets shows no breakdown, asks nothing, creates a new issue with the spec's title and body unchanged, then deletes the spec.
+tags: [smoke]
+runs: 1
 context:
   scaffold_script: scaffold.sh
 execution:
