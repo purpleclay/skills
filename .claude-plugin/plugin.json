@@ -13,5 +13,6 @@
   ],
   "agents": [
     "./agents/scout.md"
-  ]
+  ],
+  "types": "./types/index.d.ts"
 }

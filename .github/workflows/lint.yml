@@ -35,3 +35,6 @@ jobs:
 
       - name: validate_plugin (strict)
         run: nix develop --command claude plugin validate --strict .
+
+      - name: test_plugin
+        run: nix develop --command claude plugin test .
