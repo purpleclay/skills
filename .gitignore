@@ -10,10 +10,12 @@
 !evals/**/*
 !flake.lock
 !flake.nix
+!hooks/**/*
 !LICENSE
 !README.md
 !agents/**/*
 !skills/**/*
+!types/**/*
 
 # Recurse through sub-directories applying the same patterns
 !*/
