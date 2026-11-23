@@ -22,7 +22,7 @@ Specs live in `<git-dir>/refine/`, where `git rev-parse --path-format=absolute -
 - If there is no input and there are saved specs, show them in a table with the columns `#`, `Title`, `State` and `Last worked on`, one row per spec, the most recent first. The title is the spec's first `# ` heading. The state is "In progress, round <n>", where `<n>` is its last round under Interview, or "Ready to publish". Last worked on is the file's modification time. Below the table, offer to start a new spec instead, and ask the engineer to reply with a number or a title, typed or dictated.
   - If they pick an in-progress spec, resume it: open with the table of its last round under Interview, as in **Answers arrive as prose**, and carry on with the next round.
   - If they pick a ready spec that has a tickets directory, its path with `.md` replaced by `.tickets`, `/to-tickets` has started publishing it, and a changed spec would not change what it publishes. Say so, ask them to finish publishing it with `/to-tickets` first, and stop without changing it.
-  - If they pick any other ready spec, ask whether to refine it further. If they say yes, set its state back to `in progress`, ask what they want to change, and carry on until they confirm it again. If they say no, stop.
+  - If they pick any other ready spec, ask whether to refine it further. If they say yes, set its state back to `in progress`, ask what they want to change, and carry on until they confirm it again. If they say no, end on `/to-tickets`, as in **End on the next step**.
   - If they want a new spec, ask what to refine.
 
 ## Rules
@@ -34,7 +34,8 @@ Specs live in `<git-dir>/refine/`, where `git rev-parse --path-format=absolute -
 - **Code facts stay out of the spec.** No file paths, function names or line numbers, unless a named interface is itself the requirement.
 - **The spec stands on its own.** Name only what an implementer will find in the tracked codebase or on the tracker. Material that git does not track can shape your questions, and you read it through the scout like any other lookup, but no part of the spec, Open questions included, names, cites or alludes to it: describe the behaviour, never where you saw it. If the engineer wants something from that material in the spec, write what matters into the spec itself. If you do not know what in it matters, ask about the behaviour you need, never about the material. When the engineer points you at a path, or a scout report rests only on paths you have not seen tracked, check them with `git ls-files --error-unmatch <path>...`.
 - **The saved spec is the interview's memory.** Save it, in the layout under **In progress** below, each time you ask a round and each time the engineer answers one. Before you ask a round, read it back, and take what is settled and which numbers are taken from it, never from your memory of the conversation, so that after a compaction you carry on without asking an answered question again or reusing a number. The first time you save, name the file `<slug>.md`, where `<slug>` is the working title in kebab case, adding `-2`, `-3` and so on if another spec has it. Keep that file to the end, even if the title changes.
-- **The engineer can stop at any time.** If they do, save the spec, still in progress, with every question not yet settled under Open questions, including those you have not asked yet, numbered on from the last. Show it as it stands, without its front matter or Interview, as one fenced markdown block, report its path, say that `/refine` with no input picks it up again, and stop.
+- **The engineer can stop at any time.** If they do, save the spec, still in progress, with every question not yet settled under Open questions, including those you have not asked yet, numbered on from the last. Show it as it stands, without its front matter or Interview, as one fenced markdown block, then end on `/refine` with no input, which picks it up again, as in **End on the next step**.
+- **End on the next step.** When you stop with a spec saved, close with one line that names the spec by its title and the one command to run next, then stop. Never show the spec's path, or any other path: the engineer works with specs through `/refine` and `/to-tickets`, never the file.
 
 ## Process
 
@@ -67,7 +68,7 @@ You are done when every criterion is checkable, out of scope has at least one en
 
 Before you show the spec, check each criterion in turn: could the code break it and still pass every other criterion's test? If not, it repeats another one. Fold it into the criterion that already covers it.
 
-Wait for every lookup to report, then show the spec as one fenced markdown block, in the layout under **Ready** below, and ask the engineer to confirm it. It stays in progress until they do. Once they confirm, save it in that layout, report its path and stop. Do not publish anything.
+Wait for every lookup to report, then show the spec as one fenced markdown block, in the layout under **Ready** below, and ask the engineer to confirm it. It stays in progress until they do. Once they confirm, save it in that layout and end on `/to-tickets`, which publishes it, as in **End on the next step**. Do not publish anything.
 
 ## Spec
 

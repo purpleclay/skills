@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: early-stop
+description: Stopping an interview early ends by naming the spec by its title and saying that /refine with no input picks it up again, with no file path and no other command.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+  # /refine has already resumed the in-progress spec from the table and asked round 3. It holds no
+  # skill text, so the reply below loads the current /refine.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine I have to stop here for today, I'll come back to these questions another time.
+  max_turns: 15
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # The last non-empty line names both, in either order. It comes after the spec shown as it stands,
+  # so the title in that spec's heading does not count.
+  - type: regex
+    name: ends-on-one-line-with-title-and-command
+    pattern: '(?:^|\n)(?=[^\n]*Mark a todo as done)(?=[^\n]*/refine)[^\n]*\s*$'
+    flags: i
+  # /refine with an input starts a new interview instead of picking this one up again.
+  - type: regex
+    name: gives-refine-no-input
+    pattern: '`/refine [^`]*`'
+    match: not_contains
+  - type: regex
+    name: shows-no-file-path
+    pattern: '\.git\b|\.md\b'
+    match: not_contains
+  # A slash that starts a word, other than /refine, is another command or an absolute path.
+  - type: regex
+    name: names-no-other-command
+    pattern: '(?<![\w./])/(?!refine\b)[a-z][\w-]*'
+    match: not_contains
