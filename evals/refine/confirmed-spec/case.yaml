@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: confirmed-spec
+description: Confirming a ready spec ends by naming the spec by its title and pointing to /to-tickets, with no file path and no other command.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+  # /refine has already shown the finished spec and asked the engineer to confirm it. It holds no
+  # skill text, so the reply below loads the current /refine.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine Yes, the spec you just showed me is right. I confirm it.
+  max_turns: 15
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # The last non-empty line names both, in either order.
+  - type: regex
+    name: ends-on-one-line-with-title-and-command
+    pattern: '(?:^|\n)(?=[^\n]*Mark a todo as done)(?=[^\n]*/to-tickets)[^\n]*\s*$'
+    flags: i
+  - type: regex
+    name: shows-no-file-path
+    pattern: '\.git\b|\.md\b'
+    match: not_contains
+  # A slash that starts a word, other than /to-tickets, is another command or an absolute path.
+  - type: regex
+    name: names-no-other-command
+    pattern: '(?<![\w./])/(?!to-tickets\b)[a-z][\w-]*'
+    match: not_contains
+  # The ending comes after the confirmed spec is saved: a Write or Edit of it, or a Bash command that
+  # names it and writes into it with sed, tee, a redirect or a script.
+  - type: regex
+    name: saves-the-spec
+    target: trace
+    pattern: '"name":"(?:(?:Write|Edit)","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*/\.gitdir/refine/mark-a-todo-as-done\.md")|Bash","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?:(?=(?:[^"\\]|\\.)*?(?:sed -i|\btee\b|\.write\(|write_text\())(?=(?:[^"\\]|\\.)*?mark-a-todo-as-done\.md)|(?:[^"\\]|\\.)*?>>?\s*(?:\\")?[^\s"\\]*mark-a-todo-as-done\.md)))'
