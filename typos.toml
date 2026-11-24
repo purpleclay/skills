@@ -1,0 +1,3 @@
+[default.extend-words]
+# A regex prefix in the library-docs eval, matching "deprecated" and "deprecation" alike.
+deprecat = "deprecat"

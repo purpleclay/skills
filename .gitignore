@@ -16,6 +16,7 @@
 !agents/**/*
 !skills/**/*
 !types/**/*
+!typos.toml
 
 # Recurse through sub-directories applying the same patterns
 !*/

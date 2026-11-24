@@ -9,15 +9,17 @@ A regression suite for `/refine`. Each case runs `/refine` in a small throwaway 
 | `declined-spec`        | 1    | yes   | picking a ready spec and declining to change it does not end with one line naming its title and `/to-tickets`, shows a file path or another command, or starts an interview                                                                                                                                |
 | `early-stop`           | 1    | yes   | stopping an interview early does not end with one line naming the spec by its title and saying `/refine` with no input picks it up again, or the ending shows a file path or another command                                                                                                               |
 | `first-round`          | 1    | yes   | the first round waits for the scout before asking, asks more than three questions, has a question that lacks its number, label or what it decides or strays from the layout in the skill, or is asked without saving the spec as in progress, with the round's questions open and recorded as not answered |
+| `library-docs`         | 1    | yes   | asked about code that calls a deprecated library function, the scout does not check the library's documentation on the web or does not report the function as deprecated                                                                                                                                   |
 | `no-saved-specs`       | 3    |       | with no input and no saved specs, it shows a table or does anything but ask what to refine                                                                                                                                                                                                                 |
 | `no-split`             | 3    |       | it proposes splitting large work into several tickets, or leaves part of it out of the spec                                                                                                                                                                                                                |
+| `outside-lookup`       | 1    | yes   | the main conversation looks something up on the web or through an MCP server itself, the scout does not look up the outside standard the work rests on, or the spec does not list its sources under `## Sources`                                                                                           |
 | `proposes-constraints` | 3    |       | it asks whether the work changes a public contract instead of proposing an answer with a reason                                                                                                                                                                                                            |
 | `prose-reply`          | 1    |       | a reply answered out of order is read back under the wrong questions, or a skipped question is not marked and asked again                                                                                                                                                                                  |
 | `publishing-spec`      | 1    | yes   | picking a ready spec that `/to-tickets` has started publishing doesn't point to `/to-tickets`, changes the spec or starts an interview                                                                                                                                                                     |
 | `reads-idea-back`      | 1    |       | the first round asks for the goal instead of reading the idea back                                                                                                                                                                                                                                         |
 | `repeated-criteria`    | 3    |       | an acceptance criterion repeats another                                                                                                                                                                                                                                                                    |
 | `resume`               | 1    | yes   | picking an in-progress spec does not recap its last round, asks an answered question again, skips the unanswered one, reuses its number, or doesn't save to the spec it picked up                                                                                                                          |
-| `saved-specs-table`    | 1    | yes   | with no input, it does not list the saved specs in a table with their state, most recent first, or starts an interview                                                                                                                                                                                     |
+| `saved-specs-table`    | 1    | yes   | with no input, it does not list the saved specs in a table with their state, most recent first, starts an interview, or says how to reply                                                                                                                                                                  |
 | `spec-from-lookups`    | 1    | yes   | the main conversation reads repository files instead of asking the scout, or the spec names a file in the repository, which goes stale as the code moves                                                                                                                                                   |
 | `untracked-material`   | 1    |       | the spec names, cites or alludes to files that git does not track                                                                                                                                                                                                                                          |
 
@@ -28,33 +30,33 @@ There are three ways to run the suite, cheapest first. Run each from the reposit
 After every change to the skill, run the smoke cases:
 
 ```sh
-claude plugin eval . --eval-dir evals/refine --tag smoke --scaffold --ablation none --allow-tools Bash Write Edit --no-publish -j 4
+claude plugin eval . --eval-dir evals/refine --tag smoke --scaffold --ablation none --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This runs the eight cases tagged `smoke` once each, for about $1.45. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
+This runs the ten cases tagged `smoke` once each, for about $2.15. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
 
 Before merging, run the whole suite:
 
 ```sh
-claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit --no-publish -j 4
+claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 24 runs, for about $5.75.
+This is 26 runs, for about $6.30.
 
 Before a release, or when the model changes, run every case three times:
 
 ```sh
-claude plugin eval . --eval-dir evals/refine --runs 3 --max-cost-usd 15 --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit --no-publish -j 4
+claude plugin eval . --eval-dir evals/refine --runs 3 --max-cost-usd 15 --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 48 runs, for about $11.55.
+This is 54 runs, for about $13.25.
 
 - `--tag smoke` keeps only the cases tagged `smoke`.
 - `--runs 3` overrides the `runs` of every case.
 - `--max-cost-usd 15` starts no new run once the estimated cost passes $15, and exits with 2 and a partial report.
 - `--scaffold` runs each case's `scaffold.sh`, which builds the repo the case runs in.
 - `--ablation none` skips the extra run without the plugin, since this suite does not compare `/refine` with plain Claude.
-- `--allow-tools Bash Write Edit` lets `/refine` find, read and save its specs.
+- `--allow-tools Bash Write Edit WebFetch WebSearch` lets `/refine` find, read and save its specs, and the scout look things up on the web.
 - `--judge-model sonnet` grades the judgement calls with Sonnet. The default, Haiku, failed specs that were fine.
 - `--no-publish` keeps the report on your machine. Without it, the report is published to claude.ai.
 
@@ -72,7 +74,7 @@ A case is tagged `smoke` when none of its graders calls the judge and one sessio
 
 ## Layout
 
-`fixture.sh` writes a small Go todo CLI. Nothing compiles or runs it; the scout only reads it. `scaffold.sh` commits that project to a fresh git repo, and most cases link their own `scaffold.sh` to it. `untracked-material` has its own `scaffold.sh`, which runs the shared one and then adds notes that git does not track.
+`fixture.sh` writes a small Go todo CLI. Nothing compiles or runs it; the scout only reads it. `scaffold.sh` commits that project to a fresh git repo, and most cases link their own `scaffold.sh` to it. `untracked-material` has its own `scaffold.sh`, which runs the shared one and then adds notes that git does not track. `library-docs` has one too, which runs the shared one and then loads and saves the todos through `io/ioutil`, whose functions Go's documentation marks as deprecated.
 
 `saved-specs.sh` runs `scaffold.sh`, then saves two specs: one stopped after its second round, with one question of that round unanswered, and an older one saved before `/refine` recorded state. `saved-specs-table`, `resume` and `declined-spec` link their `scaffold.sh` to it. `publishing-spec` runs it, then saves a breakdown of the ready spec whose first ticket is published. `early-stop` runs it, then records in the in-progress spec the third round that its history has asked.
 

@@ -13,6 +13,7 @@ const TICKET_SECTIONS = [
   'Acceptance criteria',
   'Out of scope',
   'Constraints',
+  'Sources',
 ]
 
 const spec = atom({ plugin: 'purpleclay-skills', key: 'spec' } as const, null, {

@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: library-docs
+description: Asked about code that calls a library, the scout checks the library's current documentation on the web and reports that the call is deprecated alongside what the code does.
+tags: [smoke]
+runs: 1
+context:
+  # The store loads and saves through io/ioutil, whose functions Go's documentation marks as deprecated.
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine When ~/.todo.json is not valid JSON, `todo list` should say the file is damaged and where it is, instead of printing a raw decoding error. Look up how loading works today, then show me the spec as it stands. I will not answer any questions in this session.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit, WebFetch, WebSearch]
+graders:
+  - type: regex
+    name: scout-checks-the-docs-on-the-web
+    target: trace
+    pattern: '^\{"type":"assistant".*"type":"tool_use","id":"[^"]*","name":"(?:WebSearch|WebFetch)".*"parent_tool_use_id":"'
+    flags: m
+  # Nothing in the prompt, the skill or the code says "deprecated", so only a lookup can bring it in,
+  # and it must be about ioutil: a report that some other call is not deprecated does not count.
+  - type: regex
+    name: reports-ioutil-as-deprecated
+    target: trace
+    pattern: '^\{"type":"(?:user|assistant)".*(?:ioutil(?:(?!\\n\\n)[^"]){0,200}(?<!not |no longer |n.t )deprecat|deprecat(?:(?!\\n\\n)[^"]){0,200}ioutil)'
+    flags: mi
