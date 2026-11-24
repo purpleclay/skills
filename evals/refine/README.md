@@ -9,6 +9,7 @@ A regression suite for `/refine`. Each case runs `/refine` in a small throwaway 
 | `declined-spec`        | 1    | yes   | picking a ready spec and declining to change it does not end with one line naming its title and `/to-tickets`, shows a file path or another command, or starts an interview                                                                                                                                |
 | `early-stop`           | 1    | yes   | stopping an interview early does not end with one line naming the spec by its title and saying `/refine` with no input picks it up again, or the ending shows a file path or another command                                                                                                               |
 | `first-round`          | 1    | yes   | the first round waits for the scout before asking, asks more than three questions, has a question that lacks its number, label or what it decides or strays from the layout in the skill, or is asked without saving the spec as in progress, with the round's questions open and recorded as not answered |
+| `idea-file`            | 1    | yes   | given an idea as a file, the main conversation does not read the file itself, the first question does not read its content back as the goal, or a saved spec names the file                                                                                                                                |
 | `library-docs`         | 1    | yes   | asked about code that calls a deprecated library function, the scout does not check the library's documentation on the web or does not report the function as deprecated                                                                                                                                   |
 | `no-saved-specs`       | 3    |       | with no input and no saved specs, it shows a table or does anything but ask what to refine                                                                                                                                                                                                                 |
 | `no-split`             | 3    |       | it proposes splitting large work into several tickets, or leaves part of it out of the spec                                                                                                                                                                                                                |
@@ -33,7 +34,7 @@ After every change to the skill, run the smoke cases:
 claude plugin eval . --eval-dir evals/refine --tag smoke --scaffold --ablation none --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This runs the ten cases tagged `smoke` once each, for about $2.15. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
+This runs the eleven cases tagged `smoke` once each, for about $2.40. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
 
 Before merging, run the whole suite:
 
@@ -41,7 +42,7 @@ Before merging, run the whole suite:
 claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 26 runs, for about $6.30.
+This is 27 runs, for about $6.60.
 
 Before a release, or when the model changes, run every case three times:
 
@@ -49,7 +50,7 @@ Before a release, or when the model changes, run every case three times:
 claude plugin eval . --eval-dir evals/refine --runs 3 --max-cost-usd 15 --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 54 runs, for about $13.25.
+This is 57 runs, for about $14.00.
 
 - `--tag smoke` keeps only the cases tagged `smoke`.
 - `--runs 3` overrides the `runs` of every case.
@@ -74,7 +75,7 @@ A case is tagged `smoke` when none of its graders calls the judge and one sessio
 
 ## Layout
 
-`fixture.sh` writes a small Go todo CLI. Nothing compiles or runs it; the scout only reads it. `scaffold.sh` commits that project to a fresh git repo, and most cases link their own `scaffold.sh` to it. `untracked-material` has its own `scaffold.sh`, which runs the shared one and then adds notes that git does not track. `library-docs` has one too, which runs the shared one and then loads and saves the todos through `io/ioutil`, whose functions Go's documentation marks as deprecated.
+`fixture.sh` writes a small Go todo CLI. Nothing compiles or runs it; the scout only reads it. `scaffold.sh` commits that project to a fresh git repo, and most cases link their own `scaffold.sh` to it. `untracked-material` has its own `scaffold.sh`, which runs the shared one and then adds notes that git does not track. `library-docs` has one too, which runs the shared one and then loads and saves the todos through `io/ioutil`, whose functions Go's documentation marks as deprecated. `idea-file` has one as well, which runs the shared one and then writes the idea it gives `/refine` to a file that git does not track.
 
 `saved-specs.sh` runs `scaffold.sh`, then saves two specs: one stopped after its second round, with one question of that round unanswered, and an older one saved before `/refine` recorded state. `saved-specs-table`, `resume` and `declined-spec` link their `scaffold.sh` to it. `publishing-spec` runs it, then saves a breakdown of the ready spec whose first ticket is published. `early-stop` runs it, then records in the in-progress spec the third round that its history has asked.
 

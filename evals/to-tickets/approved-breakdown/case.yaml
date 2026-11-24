@@ -1,6 +1,6 @@
 schema_version: "1.0"
 name: approved-breakdown
-description: Once the engineer approves a breakdown, /to-tickets publishes every ticket in the spec's format, replacing the recorded issue with the first and creating the rest in its repository, sets their dependencies and deletes the spec and its tickets.
+description: Once the engineer approves a breakdown of a spec that records an issue, /to-tickets publishes every ticket in the spec's format as a new issue in the current repository, never edits the recorded issue, sets their dependencies and deletes the spec and its tickets.
 runs: 1
 context:
   scaffold_script: scaffold.sh
@@ -17,10 +17,11 @@ graders:
     name: publishes-several-tickets
     path: .eval-bin/attempt-2
   - type: file_exists
-    name: first-ticket-replaces-the-recorded-issue
-    path: .eval-bin/first-replaces
+    name: never-edits-an-issue
+    path: .eval-bin/edited
+    exists: false
   - type: file_exists
-    name: publishes-only-in-that-repository
+    name: publishes-only-in-the-current-repository
     path: .eval-bin/wrong-repo
     exists: false
   # Written while the published issues hold the spec's criteria between them, each exactly once.
