@@ -79,3 +79,11 @@ graders:
     name: saves-the-round-in-progress
     target: trace
     pattern: '"name":"(?:Write","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*/\.git/refine/[^"/]+\.md")(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"content":"(?=(?:[^"\\]|\\.)*state: in progress)(?=(?:[^"\\]|\\.)*## Open questions\\n\\n- 1 · )(?=(?:[^"\\]|\\.)*## Interview\\n\\n### Round 1)(?=(?:[^"\\]|\\.)*\|\s*Not answered))|Bash","input":\{(?=(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?=(?:[^"\\]|\\.)*?\.git/refine/[^\s"\\/]+\.md)(?=(?:[^"\\]|\\.)*state: in progress)(?=(?:[^"\\]|\\.)*## Open questions\\n\\n- 1 · )(?=(?:[^"\\]|\\.)*## Interview\\n\\n### Round 1)(?=(?:[^"\\]|\\.)*\|\s*Not answered)))'
+  # One save per round: the main conversation saves the spec once, with Write, Edit, or a Bash command
+  # or script that writes into it, rather than once when it asks the round and again when it is answered.
+  - type: regex
+    name: saves-once
+    target: trace
+    pattern: '^\{"type":"assistant"[^\n]*"name":"(?:(?:Write|Edit)","input":\{"file_path":"[^"]*/\.git/refine/[^"/]+\.md"|Bash","input":\{"command":"(?:(?=(?:[^"\\]|\\.)*?(?:sed -i|\btee\b|\.write\(|write_text\())(?=(?:[^"\\]|\\.)*?\.git/refine/[^\s"\\/]+\.md)|(?:[^"\\]|\\.)*?>>?\s*(?:\\")?[^\s"\\]*\.git/refine/[^\s"\\/]+\.md))[^\n]*"parent_tool_use_id":null[^\n]*\n(?:[^\n]*\n)*?\{"type":"assistant"[^\n]*"name":"(?:(?:Write|Edit)","input":\{"file_path":"[^"]*/\.git/refine/[^"/]+\.md"|Bash","input":\{"command":"(?:(?=(?:[^"\\]|\\.)*?(?:sed -i|\btee\b|\.write\(|write_text\())(?=(?:[^"\\]|\\.)*?\.git/refine/[^\s"\\/]+\.md)|(?:[^"\\]|\\.)*?>>?\s*(?:\\")?[^\s"\\]*\.git/refine/[^\s"\\/]+\.md))[^\n]*"parent_tool_use_id":null'
+    flags: m
+    match: not_contains
