@@ -81,6 +81,10 @@ blocked-by: <the numbers of the tickets that block it, separated by spaces, or n
 - Public contract change: yes / no
 - Data migration: yes / no
 - Security boundary: yes / no
+
+## Sources
+
+- <The spec's sources that this ticket's facts rest on. Leave out this heading when there are none.>
 ```
 
 No ticket mentions another ticket, the spec or the breakdown. GitHub links them through issue dependencies.

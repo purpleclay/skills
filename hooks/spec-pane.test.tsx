@@ -28,6 +28,10 @@ Uploads over 10 MB fail fast.
 - Public contract change: no
 - Data migration: yes
 
+## Sources
+
+- https://example.com/upload-limits
+
 ## Open questions
 
 - 3 · Size limit: should the limit be configurable?
@@ -129,6 +133,7 @@ test('a saved spec opens the pane with its ticket sections only', async ($, on) 
   expect(text).toContain('Reject uploads over the size limit')
   expect(text).toContain('Acceptance criteria')
   expect(text).toContain('Constraints')
+  expect(text).toContain('https://example.com/upload-limits')
   expect(text).not.toContain('state: in progress')
   expect(text).not.toContain('Open questions')
   expect(text).not.toContain('Interview')

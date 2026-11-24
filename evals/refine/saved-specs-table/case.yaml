@@ -40,3 +40,9 @@ graders:
     target: trace
     pattern: '\*\*1 · '
     match: not_contains
+  # How the engineer replies is theirs to choose, so the question never mentions it.
+  - type: regex
+    name: names-no-way-to-reply
+    pattern: '\b(?:typ(?:e|ed|ing)|dictat\w*|voice|speak\w*)\b'
+    flags: i
+    match: not_contains

@@ -1,0 +1,28 @@
+schema_version: "1.0"
+name: outside-lookup
+description: Work that rests on an outside standard has the scout look it up, never the main conversation, and the spec names where each outside fact came from under Sources.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine Let `todo export` write the todos as an iCalendar file, so people can import them into their calendar app. Check what the iCalendar standard needs so the spec gets it right, then show me the spec as it stands. I will not answer any questions in this session.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit, WebFetch, WebSearch]
+graders:
+  # Subagent calls carry a parent_tool_use_id, so a null one means the main conversation made the call.
+  - type: regex
+    name: main-conversation-looks-nothing-up-outside
+    target: trace
+    pattern: '^\{"type":"assistant".*"type":"tool_use","id":"[^"]*","name":"(?:WebSearch|WebFetch|mcp__[^"]*)".*"parent_tool_use_id":null'
+    flags: m
+    match: not_contains
+  - type: regex
+    name: scout-looks-it-up-on-the-web
+    target: trace
+    pattern: '^\{"type":"assistant".*"type":"tool_use","id":"[^"]*","name":"(?:WebSearch|WebFetch)".*"parent_tool_use_id":"'
+    flags: m
+  - type: regex
+    name: spec-names-its-sources
+    pattern: "```(?:markdown|md)?\\n#(?:(?!```)[\\s\\S])*?\\n## Sources\\n(?:(?!```)[\\s\\S])*?https?://"
