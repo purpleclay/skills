@@ -1,0 +1,32 @@
+schema_version: "1.0"
+name: resume-unanswered-round
+description: Picking an in-progress spec whose last round was asked but never answered asks that round again, under the same numbers and labels, and asks no question from an earlier round.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+  # /refine has already shown the table of saved specs. It holds no skill text, so the reply below
+  # loads the current /refine. The in-progress spec stopped after round 3 was asked, with 5 and 6
+  # open, before the engineer's answers were saved.
+  history_file: history.jsonl
+execution:
+  prompt: |
+    /refine I'll pick up number 1 from the table you just showed me.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  - type: regex
+    name: asks-the-round-again
+    target: trace
+    pattern: '\*\*5 · Done marker\*\*[\s\S]*\*\*6 · Done twice\*\*'
+  # A question laid out to be asked is its bold number and label followed by a blank line.
+  - type: regex
+    name: asks-no-earlier-question
+    target: trace
+    pattern: '\*\*[1-4] · [^*]+\*\*\\n\\n'
+    match: not_contains
+  - type: regex
+    name: reuses-no-number
+    target: trace
+    pattern: '\*\*5 · (?!Done marker\*\*)|\*\*6 · (?!Done twice\*\*)'
+    match: not_contains

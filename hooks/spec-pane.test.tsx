@@ -229,3 +229,107 @@ test('the pane draws each part of the spec in Claude Code theme colours', async 
     await ui.unmount()
   }
 })
+
+const row = (
+  component: 'ToolUse' | 'ToolResult',
+  id: string,
+  isExpanded = false,
+  isErrored = false,
+) =>
+  ({
+    plugin: 'purpleclay-skills',
+    component,
+    requestId: id,
+    props:
+      component === 'ToolUse'
+        ? { tool_use_id: id, tool: 'Write', input: {}, isRunning: false, isErrored,
+            isInterrupted: false, isExpanded }
+        : { tool_use_id: id, tool: 'Write', output: {}, isErrored, isExpanded },
+  }) as const
+
+const drawsItsOwn = async (
+  $: Engine,
+  component: 'ToolUse' | 'ToolResult',
+  id: string,
+  isExpanded = false,
+  isErrored = false,
+) => {
+  const ui = await $.ui.mount({ ...row(component, id, isExpanded, isErrored), surface: 'terminal' })
+  const tree = JSON.stringify(await ui.drawn())
+  await ui.unmount()
+
+  // Claude Code's own row, drawn in full, is an engine node in the tree.
+  return tree.includes('"type":"engine"')
+}
+
+const rowText = async ($: Engine, component: 'ToolUse' | 'ToolResult', id: string, isExpanded = false) => {
+  const ui = await $.ui.mount({ ...row(component, id, isExpanded), surface: 'terminal' })
+  const texts = await ui.findAll({ type: 'Text' })
+  await ui.unmount()
+
+  return texts.map(node => node.text).join('\n')
+}
+
+test('each save of a spec draws as one dim line naming its round, with no diff', async ($, on) => {
+  engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED, tool_use_id: 'w1' })
+  await $.tool.call({
+    tool: 'Bash',
+    command: catTo(SPEC, `${SAVED}\n### Round 2\n`),
+    tool_use_id: 'b1',
+  })
+  await $.tool.call({
+    tool: 'Write',
+    file_path: SPEC,
+    content: SAVED.replace(/^---[\s\S]*?---\n\n/, '').replace(/\n## Open questions[\s\S]*/, '\n'),
+    tool_use_id: 'w2',
+  })
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ ...row('ToolUse', 'w1'), surface })
+    const line = await ui.find({ type: 'Text', text: /^Saved spec · round 1$/ })
+    expect(line?.props.color).toBe('inactive')
+    await ui.unmount()
+  }
+  expect(await rowText($, 'ToolUse', 'b1')).toBe('Saved spec · round 2')
+  expect(await rowText($, 'ToolUse', 'w2')).toBe('Saved spec · ready to publish')
+  expect(await drawsItsOwn($, 'ToolResult', 'w1')).toBe(false)
+})
+
+test('the full transcript view draws a save in full', async ($, on) => {
+  engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED, tool_use_id: 'w1' })
+
+  expect(await drawsItsOwn($, 'ToolUse', 'w1', true)).toBe(true)
+  expect(await drawsItsOwn($, 'ToolResult', 'w1', true)).toBe(true)
+})
+
+test('tool calls that save no spec draw as they do today', async ($, on) => {
+  engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED, tool_use_id: 'w1' })
+  await $.tool.call({ tool: 'Bash', command: `cat ${SPEC}`, tool_use_id: 'b1' })
+  await $.tool.call({
+    tool: 'Write',
+    file_path: `${GIT_DIR}/refine/reject-big-uploads.tickets.draft/1.md`,
+    content: SAVED,
+    tool_use_id: 'w2',
+  })
+  await $.tool.call({ tool: 'Write', file_path: '/repo/README.md', content: SAVED, tool_use_id: 'w3' })
+
+  for (const id of ['b1', 'w2', 'w3']) {
+    expect(await drawsItsOwn($, 'ToolUse', id)).toBe(true)
+    expect(await drawsItsOwn($, 'ToolResult', id)).toBe(true)
+  }
+})
+
+test('a save whose call failed draws in full, so its error shows', async ($, on) => {
+  engine(on)
+
+  await $.tool.call({ tool: 'Bash', command: catTo(SPEC, SAVED), tool_use_id: 'b1' })
+
+  expect(await drawsItsOwn($, 'ToolUse', 'b1', false, true)).toBe(true)
+  expect(await drawsItsOwn($, 'ToolResult', 'b1', false, true)).toBe(true)
+})
