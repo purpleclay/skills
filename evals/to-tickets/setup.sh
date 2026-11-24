@@ -21,8 +21,8 @@ if [ "$(command -v gh)" != .eval-bin/gh ]; then
   exit 1
 fi
 
-# spec <path> <title> [issue url]: saves a spec as /refine would, recording the issue it was
-# refined from when given one.
+# spec <path> <title> [issue url]: saves a spec as /refine would, or, given an issue url, as it did
+# before it stopped recording the issue a spec was refined from.
 spec() {
   mkdir -p "$(dirname "$1")"
   {

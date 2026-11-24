@@ -182,8 +182,8 @@ if [ -e "$dir/want-issue" ] && [ "$issue" = "$(cat "$dir/want-issue")" ] &&
   touch "$dir/published"
 fi
 
-# first-replaces: the first publish replaces want-first.
-[ "$n" = 1 ] && [ -e "$dir/want-first" ] && [ "$issue" = "$(cat "$dir/want-first")" ] && touch "$dir/first-replaces"
+# edited: a publish that edits an existing issue instead of creating one.
+[ "$verb" = edit ] && touch "$dir/edited"
 
 # wrong-repo: a publish outside want-repo.
 [ -e "$dir/want-repo" ] && [ "${issue%%#*}" != "$(cat "$dir/want-repo")" ] && touch "$dir/wrong-repo"

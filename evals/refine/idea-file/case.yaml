@@ -1,0 +1,37 @@
+schema_version: "1.0"
+name: idea-file
+description: Given an idea as a file, /refine reads the file itself, reads its content back as the goal in the first question, and saves a spec that never names the file.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /refine ideas/backlog-item.md
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # The main conversation reads the file's content, with Read or a Bash command that prints it, rather
+  # than sending it to the scout. A command that only checks the path, such as `git ls-files`, is not a read.
+  - type: regex
+    name: reads-the-file-itself
+    target: trace
+    pattern: '^\{"type":"assistant".*"name":"(?:Read","input":\{(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*backlog-item\.md"|Bash","input":\{(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?=(?:[^"\\]|\\.)*?backlog-item\.md)(?=(?:[^"\\]|\\.)*?(?:\b|(?<=\\n))(?:cat|head|tail|sed|awk|less|more)\b))[^\n]*"parent_tool_use_id":null'
+    flags: m
+  # The filename gives nothing away, so question 1 can only say "archive" by reading the file back.
+  - type: regex
+    name: reads-the-file-back-as-the-goal
+    target: trace
+    pattern: '\*\*1 · [^*\n]+\*\*\\n\\n(?:(?!\\n\\n)(?:[^"\\]|\\.))*?(?:archive|archiving)'
+    flags: i
+  - type: regex
+    name: saves-the-spec
+    target: trace
+    pattern: '"name":"(?:Write","input":\{(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"file_path":"[^"]*/\.git/refine/[^"/]+\.md"|Bash","input":\{(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?:[^"\\]|\\.)*?\.git/refine/[^\s"\\/]+\.md)'
+  # No save into the git directory's refine folder names the file: a Write or Edit of a spec whose
+  # text names it, or a Bash command that both names it and writes into that folder.
+  - type: regex
+    name: spec-never-names-the-file
+    target: trace
+    pattern: '"name":"(?:Write|Edit)","input":\{"file_path":"[^"]*/\.git/refine/[^"]*",(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"(?:content|new_string)":"(?:[^"\\]|\\.)*?backlog-item|"name":"Bash","input":\{(?:"(?:[^"\\]|\\.)*":(?:"(?:[^"\\]|\\.)*"|true|false|-?\d+|null),)*"command":"(?=(?:[^"\\]|\\.)*?\.git/refine/)(?:[^"\\]|\\.)*?backlog-item'
+    match: not_contains
