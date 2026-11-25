@@ -89,10 +89,13 @@ const specTimes = async ($: EngineInterface) => {
       )
 }
 
+const isInProgressSpec = (text: string) =>
+  /^---\n[\s\S]*?^state: in progress$[\s\S]*?\n---\n/m.test(text)
+
 // Names a save by the spec's last round, or as ready once it has no round left.
 const saveLine = (text: string) => {
   const round = [...text.matchAll(/^### Round (\d+)/gm)].at(-1)?.[1]
-  const isInProgress = /^---\n[\s\S]*?^state: in progress$[\s\S]*?\n---\n/m.test(text)
+  const isInProgress = isInProgressSpec(text)
 
   return isInProgress && round !== undefined
     ? `Saved spec · round ${round}`
@@ -106,7 +109,9 @@ async function showSaved($: EngineInterface, path: string, toolUseId: string) {
   const text = await $.fs.read(path)
   await update($, memberOf(save, { requestId: toolUseId }), () => saveLine(text))
   await update($, spec, () => ({ path, markdown: ticketSections(text) }))
-  await $.ui.open({ id: PANE, title: 'Spec', backgroundColor: 'transparent' })
+  // A confirmed spec was just shown in the chat, so the pane stays closed.
+  if (isInProgressSpec(text))
+    await $.ui.open({ id: PANE, title: 'Spec', backgroundColor: 'transparent' })
 }
 
 // A save draws as one dim line, and its diff or output as nothing, unless the
@@ -158,6 +163,21 @@ export const register: Register = on => {
     }
 
     return ran
+  }).catch(($, e, next) => next(e))
+
+  // Once the spec is shown whole in the chat, for approval or as it stands when
+  // the engineer stops, the pane would only repeat it. The chat shows it under
+  // its title heading, which no round's questions carry.
+  on('turn.complete', async ($, e, next) => {
+    const shown = await read($, spec)
+    const title = shown === null ? '' : sectionsOf(shown.markdown).title
+    const isShown =
+      e.agentId === undefined &&
+      title !== '' &&
+      e.answer.split('\n').some(line => line.trim() === `# ${title}`)
+    if (isShown) await $.ui.close({ id: PANE }).catch(() => undefined)
+
+    return next(e)
   }).catch(($, e, next) => next(e))
 
   // shortcut: a save is known once its call returns, so a save's row draws in
