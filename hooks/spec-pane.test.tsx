@@ -99,6 +99,7 @@ const engine = (on: On) => {
     panes.closed++
     return { value: undefined }
   })
+  on('turn.complete', (_, e) => ({ text: e.answer }))
   on('tool.call', (_, e) => {
     if (e.tool === 'Write') save(e.file_path, e.content)
     if (e.tool === 'Bash' && e.command.startsWith('rm ')) {
@@ -332,4 +333,55 @@ test('a save whose call failed draws in full, so its error shows', async ($, on)
 
   expect(await drawsItsOwn($, 'ToolUse', 'b1', false, true)).toBe(true)
   expect(await drawsItsOwn($, 'ToolResult', 'b1', false, true)).toBe(true)
+})
+
+const READY = SAVED.replace(/^---[\s\S]*?---\n\n/, '').replace(/\n## Open questions[\s\S]*/, '\n')
+
+const turnEnds = ($: Engine, answer: string) =>
+  $.turn.complete({ turnId: 't1', answer, durationMs: 1, isAborted: false, reason: 'answer' })
+
+const SHOWN = `Here is the spec:\n\n\`\`\`markdown\n${READY}\`\`\`\n\nDoes this capture it?`
+
+test('the pane closes once the spec is shown in the chat', async ($, on) => {
+  const panes = engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED })
+  await turnEnds($, '**4 · Size limit**\n\nShould the limit be configurable?')
+  expect(panes.closed).toBe(0)
+
+  await turnEnds($, SHOWN)
+  expect(panes.closed).toBe(1)
+})
+
+test('a spec shown by a subagent leaves the pane open', async ($, on) => {
+  const panes = engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED })
+  await $.turn.complete({
+    turnId: 't1', agentId: 'a1', answer: SHOWN, durationMs: 1, isAborted: false, reason: 'answer',
+  })
+
+  expect(panes.closed).toBe(0)
+})
+
+test('the pane stays closed when the confirmed spec is saved', async ($, on) => {
+  const panes = engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED })
+  await turnEnds($, SHOWN)
+  await $.tool.call({ tool: 'Bash', command: catTo(SPEC, READY) })
+
+  expect(panes.opened).toBe(1)
+})
+
+test('the pane comes back when refining starts again', async ($, on) => {
+  const panes = engine(on)
+
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: SAVED })
+  await turnEnds($, SHOWN)
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: READY })
+  await $.tool.call({ tool: 'Write', file_path: SPEC, content: `${SAVED}\n### Round 2\n` })
+
+  expect(panes.opened).toBe(2)
+  expect(await drawn($)).toContain('Reject uploads over the size limit')
 })
