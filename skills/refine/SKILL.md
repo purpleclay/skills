@@ -21,8 +21,7 @@ Specs live in `<git-dir>/refine/`, where `git rev-parse --path-format=absolute -
 - If there is no input and no saved specs, ask what to refine.
 - If there is no input and there are saved specs, show them in a table with the columns `#`, `Title`, `State` and `Last worked on`, one row per spec, the most recent first. The title is the spec's first `# ` heading. The state is "In progress, round <n>", where `<n>` is its last round under Interview, or "Ready to publish". Last worked on is the file's modification time. Below the table, offer to start a new spec instead, and ask which spec they want to pick up. Their reply may give its number or its title.
   - If they pick an in-progress spec, resume it. If its last round under Interview records no answer, the interview stopped before you read their reply: ask that round again as it stands, its questions under the same numbers and labels, with no table and no other question. Otherwise open with the table of its last round, as in **Answers arrive as prose**, and carry on with the next round.
-  - If they pick a ready spec that has a tickets directory, its path with `.md` replaced by `.tickets`, `/to-tickets` has started publishing it, and a changed spec would not change what it publishes. Say so, ask them to finish publishing it with `/to-tickets` first, and stop without changing it.
-  - If they pick any other ready spec, ask whether to refine it further. If they say yes, set its state back to `in progress`, ask what they want to change, and carry on until they confirm it again. If they say no, end on `/to-tickets`, as in **End on the next step**.
+  - If they pick a ready spec, ask whether to refine it further. If they say yes, set its state back to `in progress`, ask what they want to change, and carry on until they confirm it again. If they say no, end on `/to-ticket`, as in **End on the next step**.
   - If they want a new spec, ask what to refine.
 
 ## Rules
@@ -36,7 +35,7 @@ Specs live in `<git-dir>/refine/`, where `git rev-parse --path-format=absolute -
 - **Outside facts name their source.** When a fact in the spec rests on what the scout found outside the repository, list its source, such as a documentation URL, under Sources. A source that needs signing in, such as a company wiki, never appears in the spec: write what the spec needs from it as behaviour or an acceptance criterion, with no source. The file or URL that gave the idea is never a source: no part of the spec, front matter included, names it.
 - **The saved spec is the interview's memory.** Save it, in the layout under **In progress** below, once per round, just before you send the message that asks the round or shows the spec: one save records what you took from the reply to the last round and the questions you are about to ask, each not answered yet. Before you ask a round, read it back, and take what is settled and which numbers are taken from it, never from your memory of the conversation, so that after a compaction you carry on without asking an answered question again or reusing a number. The first time you save, name the file `<slug>.md`, where `<slug>` is the working title in kebab case, adding `-2`, `-3` and so on if another spec has it. Keep that file to the end, even if the title changes.
 - **The engineer can stop at any time.** If they do, save the spec, still in progress, with every question not yet settled under Open questions, including those you have not asked yet, numbered on from the last. Show it as it stands, without its front matter or Interview, as one fenced markdown block, then end on `/refine` with no input, which picks it up again, as in **End on the next step**.
-- **End on the next step.** When you stop with a spec saved, close with one line that names the spec by its title and the one command to run next, then stop. Never show the spec's path, or any other path: the engineer works with specs through `/refine` and `/to-tickets`, never the file.
+- **End on the next step.** When you stop with a spec saved, close with one line that names the spec by its title and the one command to run next, then stop. Never show the spec's path, or any other path: the engineer works with specs through `/refine` and `/to-ticket`, never the file.
 
 ## Process
 
@@ -48,7 +47,7 @@ Specs live in `<git-dir>/refine/`, where `git rev-parse --path-format=absolute -
    - **Acceptance criteria**: observable behaviours. Challenge each one until it can be checked by a test or a command, and until it says nothing about implementation. "Works correctly" is not a criterion. When an answer is already covered by a criterion, sharpen that criterion instead of adding a new one.
    - **Out of scope**: name up to three adjacent things an implementer is most likely to do, and ask for each whether it is in or out.
    - **Constraints**: what holds however the code looks. For whether the work changes a public contract, migrates data or crosses a security boundary, ask the scout what you need to judge it, then propose yes or no for each, with a one-line reason based on what the code does, and ask the engineer to confirm or correct them. The spec records the engineer's answer.
-4. Keep it one spec. However large the work, refine all of it and never propose splitting it into several tickets or specs: `/to-tickets` splits it when it publishes.
+4. Keep it one spec. However large the work, refine all of it and never propose splitting it into several tickets or specs.
 
 ## Questions
 
@@ -68,7 +67,7 @@ You are done when every criterion is checkable, out of scope has at least one en
 
 Before you show the spec, check each criterion in turn: could the code break it and still pass every other criterion's test? If not, it repeats another one. Fold it into the criterion that already covers it.
 
-Wait for every lookup to report, then show the spec as one fenced markdown block, in the layout under **Ready** below, and ask the engineer to confirm it. It stays in progress until they do. Once they confirm, save it again, in that layout, even though you saved it before showing it, and end on `/to-tickets`, which publishes it, as in **End on the next step**. Do not publish anything.
+Wait for every lookup to report, then show the spec as one fenced markdown block, in the layout under **Ready** below, and ask the engineer to confirm it. It stays in progress until they do. Once they confirm, save it again, in that layout, even though you saved it before showing it, and end on `/to-ticket`, which publishes it, as in **End on the next step**. Do not publish anything.
 
 ## Spec
 

@@ -1,0 +1,29 @@
+schema_version: "1.0"
+name: missing-label
+description: When the repository has no bug label, /to-ticket still publishes a spec that fixes wrong behaviour, without a label, and creates no label.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-ticket specs/empty-file.md
+  max_turns: 15
+  allowed_tools: [Bash, Read]
+graders:
+  # The stand-in gh writes this only for a new issue in acme/todo with the spec's exact title and body.
+  - type: file_exists
+    name: publishes-the-spec-as-a-new-issue
+    path: .eval-bin/published
+  # The stand-in gh writes attempt-<n> for each publish.
+  - type: file_exists
+    name: publishes-once
+    path: .eval-bin/attempt-2
+    exists: false
+  - type: file_exists
+    name: publishes-it-without-a-label
+    path: .eval-bin/unlabelled
+  - type: file_exists
+    name: creates-no-label
+    path: .eval-bin/created-label
+    exists: false
