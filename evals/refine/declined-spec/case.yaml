@@ -1,6 +1,6 @@
 schema_version: "1.0"
 name: declined-spec
-description: Picking a ready spec and declining to refine it further ends by naming the spec by its title and pointing to /to-tickets, with no file path and no other command.
+description: Picking a ready spec and declining to refine it further ends by naming the spec by its title and pointing to /to-ticket, with no file path and no other command.
 tags: [smoke]
 runs: 1
 context:
@@ -17,16 +17,16 @@ graders:
   # The last non-empty line names both, in either order.
   - type: regex
     name: ends-on-one-line-with-title-and-command
-    pattern: '(?:^|\n)(?=[^\n]*Show a `?due`? date on each todo)(?=[^\n]*/to-tickets)[^\n]*\s*$'
+    pattern: '(?:^|\n)(?=[^\n]*Show a `?due`? date on each todo)(?=[^\n]*/to-ticket)[^\n]*\s*$'
     flags: i
   - type: regex
     name: shows-no-file-path
     pattern: '\.git\b|\.md\b'
     match: not_contains
-  # A slash that starts a word, other than /to-tickets, is another command or an absolute path.
+  # A slash that starts a word, other than /to-ticket, is another command or an absolute path.
   - type: regex
     name: names-no-other-command
-    pattern: '(?<![\w./])/(?!to-tickets\b)[a-z][\w-]*'
+    pattern: '(?<![\w./])/(?!to-ticket\b)[a-z][\w-]*'
     match: not_contains
   - type: regex
     name: asks-no-interview-question

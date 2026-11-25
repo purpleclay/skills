@@ -5,8 +5,8 @@ A regression suite for `/refine`. Each case runs `/refine` in a small throwaway 
 | Case                      | Runs | Smoke | Fails when                                                                                                                                                                                                                                                                                           |
 | ------------------------- | ---- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `auto-flag`               | 1    |       | `/refine --auto` does anything other than say it needs a human and stop                                                                                                                                                                                                                              |
-| `confirmed-spec`          | 1    | yes   | confirming a ready spec does not end with one line naming its title and `/to-tickets`, or the ending shows a file path or another command                                                                                                                                                            |
-| `declined-spec`           | 1    | yes   | picking a ready spec and declining to change it does not end with one line naming its title and `/to-tickets`, shows a file path or another command, or starts an interview                                                                                                                          |
+| `confirmed-spec`          | 1    | yes   | confirming a ready spec does not end with one line naming its title and `/to-ticket`, or the ending shows a file path or another command                                                                                                                                                            |
+| `declined-spec`           | 1    | yes   | picking a ready spec and declining to change it does not end with one line naming its title and `/to-ticket`, shows a file path or another command, or starts an interview                                                                                                                          |
 | `early-stop`              | 1    | yes   | stopping an interview early does not end with one line naming the spec by its title and saying `/refine` with no input picks it up again, or the ending shows a file path or another command                                                                                                         |
 | `first-round`             | 1    | yes   | the first round waits for the scout before asking, asks more than three questions, has a question that lacks its number, label or what it decides or strays from the layout in the skill, or is not saved exactly once, as in progress, with the round's questions open and recorded as not answered |
 | `idea-file`               | 1    | yes   | given an idea as a file, the main conversation does not read the file itself, the first question does not read its content back as the goal, or a saved spec names the file                                                                                                                          |
@@ -16,7 +16,6 @@ A regression suite for `/refine`. Each case runs `/refine` in a small throwaway 
 | `outside-lookup`          | 1    | yes   | the main conversation looks something up on the web or through an MCP server itself, the scout does not look up the outside standard the work rests on, or the spec does not list its sources under `## Sources`                                                                                     |
 | `proposes-constraints`    | 3    |       | it asks whether the work changes a public contract instead of proposing an answer with a reason                                                                                                                                                                                                      |
 | `prose-reply`             | 1    |       | a reply answered out of order is read back under the wrong questions, or a skipped question is not marked and asked again                                                                                                                                                                            |
-| `publishing-spec`         | 1    | yes   | picking a ready spec that `/to-tickets` has started publishing doesn't point to `/to-tickets`, changes the spec or starts an interview                                                                                                                                                               |
 | `reads-idea-back`         | 1    |       | the first round asks for the goal instead of reading the idea back                                                                                                                                                                                                                                   |
 | `repeated-criteria`       | 3    |       | an acceptance criterion repeats another                                                                                                                                                                                                                                                              |
 | `resume`                  | 1    | yes   | picking an in-progress spec does not recap its last round, asks an answered question again, skips the unanswered one, reuses its number, doesn't save to the spec it picked up, or saves it more than once                                                                                           |
@@ -35,7 +34,7 @@ After every change to the skill, run the smoke cases:
 claude plugin eval . --eval-dir evals/refine --tag smoke --scaffold --ablation none --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This runs the twelve cases tagged `smoke` once each, for about $2.60. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
+This runs the eleven cases tagged `smoke` once each, for about $2.40. Their graders are all patterns, so nothing calls the judge and the same transcript always gets the same verdict.
 
 Before merging, run the whole suite:
 
@@ -43,7 +42,7 @@ Before merging, run the whole suite:
 claude plugin eval . --eval-dir evals/refine --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 28 runs, for about $6.80.
+This is 27 runs, for about $6.60.
 
 Before a release, or when the model changes, run every case three times:
 
@@ -51,7 +50,7 @@ Before a release, or when the model changes, run every case three times:
 claude plugin eval . --eval-dir evals/refine --runs 3 --max-cost-usd 15 --scaffold --ablation none --judge-model sonnet --allow-tools Bash Write Edit WebFetch WebSearch --no-publish -j 4
 ```
 
-This is 60 runs, for about $14.70.
+This is 57 runs, for about $14.00.
 
 - `--tag smoke` keeps only the cases tagged `smoke`.
 - `--runs 3` overrides the `runs` of every case.
@@ -78,9 +77,9 @@ A case is tagged `smoke` when none of its graders calls the judge and one sessio
 
 `fixture.sh` writes a small Go todo CLI. Nothing compiles or runs it; the scout only reads it. `scaffold.sh` commits that project to a fresh git repo, and most cases link their own `scaffold.sh` to it. `untracked-material` has its own `scaffold.sh`, which runs the shared one and then adds notes that git does not track. `library-docs` has one too, which runs the shared one and then loads and saves the todos through `io/ioutil`, whose functions Go's documentation marks as deprecated. `idea-file` has one as well, which runs the shared one and then writes the idea it gives `/refine` to a file that git does not track.
 
-`saved-specs.sh` runs `scaffold.sh`, then saves two specs: one stopped after its second round, with one question of that round unanswered, and an older one saved before `/refine` recorded state. `saved-specs-table`, `resume` and `declined-spec` link their `scaffold.sh` to it. `publishing-spec` runs it, then saves a breakdown of the ready spec whose first ticket is published. `early-stop` runs it, then records in the in-progress spec the third round that its history has asked, and `resume-unanswered-round` links its `scaffold.sh` to that one.
+`saved-specs.sh` runs `scaffold.sh`, then saves two specs: one stopped after its second round, with one question of that round unanswered, and an older one saved before `/refine` recorded state. `saved-specs-table`, `resume` and `declined-spec` link their `scaffold.sh` to it. `early-stop` runs it, then records in the in-progress spec the third round that its history has asked, and `resume-unanswered-round` links its `scaffold.sh` to that one.
 
-`prose-reply`, `proposes-constraints`, `resume`, `resume-unanswered-round`, `publishing-spec`, `declined-spec`, `early-stop` and `confirmed-spec` test a reply to something `/refine` has already said. Each resumes `history.jsonl`, a conversation in which `/refine` has already asked its first round, or has shown the table of saved specs for `resume`, `resume-unanswered-round`, `publishing-spec` and `declined-spec`, a resumed round for `early-stop`, or the finished spec for `confirmed-spec`. The case's prompt is the engineer's reply. The history holds no skill text, so the reply starts with `/refine` to load the current skill.
+`prose-reply`, `proposes-constraints`, `resume`, `resume-unanswered-round`, `declined-spec`, `early-stop` and `confirmed-spec` test a reply to something `/refine` has already said. Each resumes `history.jsonl`, a conversation in which `/refine` has already asked its first round, or has shown the table of saved specs for `resume`, `resume-unanswered-round` and `declined-spec`, a resumed round for `early-stop`, or the finished spec for `confirmed-spec`. The case's prompt is the engineer's reply. The history holds no skill text, so the reply starts with `/refine` to load the current skill.
 
 One case checks several things when one session can show all of them. `first-round` holds every check on the first round that a pattern can make: when the round is asked, how it is laid out and what is saved. `reads-idea-back` has the same prompt and holds the one check on that round that needs the judge, so that `first-round` can stay in the smoke cases. `spec-from-lookups` checks both how the code is looked up and what the spec says about it. A case stays on its own when its prompt sets a trap that would change what the others see, as `no-split`, `repeated-criteria` and `untracked-material` do.
 

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Stands in for the GitHub CLI so these evals never reach GitHub. setup.sh copies it into each
+# case's .eval-bin/, and it keeps its state there for the graders: every call goes to `calls`, and
+# every publish to `attempt-<n>`. It also writes the marker files the graders look for, which are
+# described where they are made.
+set -u
+dir=$(dirname "$0")
+echo "$*" >>"$dir/calls"
+
+case "${1:-} ${2:-}" in
+"auth status")
+  echo "github.com: Logged in to github.com account eval (keyring)"
+  exit 0
+  ;;
+"label list")
+  # The repository's labels are repo-labels, one per line, or bug and enhancement when it is absent.
+  if [ -e "$dir/repo-labels" ]; then cat "$dir/repo-labels"; else printf 'bug\nenhancement\n'; fi
+  exit 0
+  ;;
+"label create")
+  # created-label: a label created rather than left off.
+  touch "$dir/created-label"
+  exit 0
+  ;;
+"issue create") ;;
+*)
+  echo "gh: this eval only supports auth status, label list, label create and issue create" >&2
+  exit 1
+  ;;
+esac
+
+n=1
+while [ -e "$dir/attempt-$n" ]; do n=$((n + 1)); done
+touch "$dir/attempt-$n"
+
+shift 2
+repo=acme/todo title="" body="" body_file="" labels=""
+while [ $# -gt 0 ]; do
+  case $1 in
+  -t | --title) title=$2 && shift ;;
+  --title=*) title=${1#*=} ;;
+  -b | --body) body=$2 && shift ;;
+  --body=*) body=${1#*=} ;;
+  -F | --body-file) body_file=$2 && shift ;;
+  --body-file=*) body_file=${1#*=} ;;
+  -l | --label) labels="$labels,$2" && shift ;;
+  --label=*) labels="$labels,${1#*=}" ;;
+  -R | --repo) repo=$2 && shift ;;
+  --repo=*) repo=${1#*=} ;;
+  esac
+  shift
+done
+if [ "$body_file" = - ]; then
+  body=$(cat)
+elif [ -n "$body_file" ]; then
+  body=$(cat "$body_file")
+fi
+
+# `fail` fails every publish.
+if [ -e "$dir/fail" ]; then
+  echo "HTTP 502: Bad Gateway (https://api.github.com/graphql)" >&2
+  exit 1
+fi
+
+# published: a new issue in acme/todo with want-title and want-body. GitHub ignores blank lines
+# around a body, so they do not count as a change. sed drops the leading ones, and $(...) the
+# trailing ones.
+if [ "$repo" = acme/todo ] && [ "$title" = "$(cat "$dir/want-title")" ] &&
+  [ "$(printf '%s\n' "$body" | sed '/./,$!d')" = "$(sed '/./,$!d' "$dir/want-body")" ]; then
+  touch "$dir/published"
+fi
+
+# labelled-<labels>: a publish that gave exactly those labels, comma-separated in the order given,
+# so labelled-bug means bug and nothing else. unlabelled: a publish that gave none.
+if [ -z "$labels" ]; then
+  touch "$dir/unlabelled"
+else
+  touch "$dir/labelled-${labels#,}"
+fi
+
+echo "https://github.com/$repo/issues/12"

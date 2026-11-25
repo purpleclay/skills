@@ -137,7 +137,7 @@ export const register: Register = on => {
     return ran
   }).catch(($, e, next) => next(e))
 
-  // shortcut: only a Bash call is watched for the spec's deletion, as /to-tickets
+  // shortcut: only a Bash call is watched for the spec's deletion, as /to-ticket
   // deletes it with `rm`; watch other tools if it ever deletes it another way.
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     // /refine often saves the spec from the shell, with the path in a variable,
