@@ -13,9 +13,19 @@ case "${1:-} ${2:-}" in
   echo "github.com: Logged in to github.com account eval (keyring)"
   exit 0
   ;;
+"label list")
+  # The repository's labels are repo-labels, one per line, or bug and enhancement when it is absent.
+  if [ -e "$dir/repo-labels" ]; then cat "$dir/repo-labels"; else printf 'bug\nenhancement\n'; fi
+  exit 0
+  ;;
+"label create")
+  # created-label: a label created rather than left off.
+  touch "$dir/created-label"
+  exit 0
+  ;;
 "issue create" | "issue edit" | api\ *) ;;
 *)
-  echo "gh: this eval only supports auth status, issue create, issue edit and api" >&2
+  echo "gh: this eval only supports auth status, label list, label create, issue create, issue edit and api" >&2
   exit 1
   ;;
 esac
@@ -132,9 +142,11 @@ touch "$dir/attempt-$n"
 
 verb=$2
 shift 2
-repo=acme/todo target="" title="" body="" body_file=""
+repo=acme/todo target="" title="" body="" body_file="" labels=""
 while [ $# -gt 0 ]; do
   case $1 in
+  -l | --label) labels="$labels,$2" && shift ;;
+  --label=*) labels="$labels,${1#*=}" ;;
   -t | --title) title=$2 && shift ;;
   --title=*) title=${1#*=} ;;
   -b | --body) body=$2 && shift ;;
@@ -180,6 +192,13 @@ if [ -e "$dir/want-issue" ] && [ "$issue" = "$(cat "$dir/want-issue")" ] &&
   [ "$title" = "$(cat "$dir/want-title")" ] &&
   [ "$(printf '%s\n' "$body" | sed '/./,$!d')" = "$(sed '/./,$!d' "$dir/want-body")" ]; then
   touch "$dir/published"
+fi
+
+# labelled-<name>: a publish that gave that label. unlabelled: a publish that gave none.
+if [ -z "$labels" ]; then
+  touch "$dir/unlabelled"
+else
+  for l in $(printf '%s' "$labels" | tr , ' '); do touch "$dir/labelled-$l"; done
 fi
 
 # edited: a publish that edits an existing issue instead of creating one.

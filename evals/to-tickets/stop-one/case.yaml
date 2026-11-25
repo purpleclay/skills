@@ -1,0 +1,32 @@
+schema_version: "1.0"
+name: stop-one
+description: Even for a spec that fits in one ticket, /to-tickets shows the ticket in a table before publishing, with only a label the repository has, and when the engineer says stop it publishes nothing.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-tickets specs/empty-file.md
+
+    I won't be around to answer, so here is my reply in advance: when you show me the tickets, I say stop.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
+graders:
+  # The tickets are shown as a table with a "Blocked by" column, in the conversation's own text.
+  - type: regex
+    name: shows-the-ticket
+    target: trace
+    pattern: '^\{"type":"assistant".*\|\s*Blocked by\s*\|.*"parent_tool_use_id":null'
+    flags: m
+  # The main conversation never names bug as a label, in the table or anywhere else.
+  - type: regex
+    name: names-no-missing-label
+    target: trace
+    pattern: '^\{"type":"assistant"[^\n]*(?:`bug`|\|\s*bug\s*\|)[^\n]*"parent_tool_use_id":null'
+    flags: m
+    match: not_contains
+  - type: file_exists
+    name: publishes-nothing
+    path: .eval-bin/attempt-1
+    exists: false

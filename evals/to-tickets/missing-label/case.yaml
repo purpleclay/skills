@@ -1,0 +1,37 @@
+schema_version: "1.0"
+name: missing-label
+description: When the repository has no bug label, a spec that fixes wrong behaviour still publishes, without a label, and no label is created.
+tags: [smoke]
+runs: 1
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    /to-tickets specs/empty-file.md
+
+    I won't be around to answer, so here is my reply in advance: I approve the tickets you show me.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read]
+graders:
+  # The stand-in gh writes this only for a new issue in acme/todo with the spec's exact title and body.
+  - type: file_exists
+    name: publishes-the-spec-as-a-new-issue
+    path: .eval-bin/published
+  - type: file_exists
+    name: publishes-it-without-a-label
+    path: .eval-bin/unlabelled
+  - type: file_exists
+    name: gives-no-label
+    path: .eval-bin/labelled-enhancement
+    exists: false
+  - type: file_exists
+    name: creates-no-label
+    path: .eval-bin/created-label
+    exists: false
+  # The main conversation never names bug as a label, in its report or anywhere else.
+  - type: regex
+    name: names-no-missing-label
+    target: trace
+    pattern: '^\{"type":"assistant"[^\n]*(?:`bug`|\|\s*bug\s*\|)[^\n]*"parent_tool_use_id":null'
+    flags: m
+    match: not_contains

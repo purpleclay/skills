@@ -12,7 +12,8 @@
     "./skills/to-tickets"
   ],
   "agents": [
-    "./agents/scout.md"
+    "./agents/scout.md",
+    "./agents/surveyor.md"
   ],
   "types": "./types/index.d.ts"
 }

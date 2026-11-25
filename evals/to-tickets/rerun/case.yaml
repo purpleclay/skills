@@ -22,11 +22,12 @@ graders:
   - type: file_exists
     name: sets-the-approved-dependencies
     path: .eval-bin/linked
+  # A table with a "Blocked by" column in the conversation's own text, before the first publish. The
+  # report at the end may hold one.
   - type: regex
     name: shows-no-breakdown
     target: trace
-    pattern: '^\{"type":"assistant".*\|\s*Blocks\s*\|'
-    flags: m
+    pattern: '^(?:(?![^\n]*gh issue create)[^\n]*\n)*?\{"type":"assistant"(?![^\n]*gh issue create)[^\n]*\|\s*Blocked by\s*\|'
     match: not_contains
   # file_exists sees only files the run creates, so the trace has to show Bash commands that name
   # the spec and its tickets directory and delete them.

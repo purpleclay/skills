@@ -8,8 +8,10 @@ context:
 execution:
   prompt: |
     /to-tickets specs/due-dates.md
-  max_turns: 15
-  allowed_tools: [Bash, Read]
+
+    I won't be around to answer, so here is my reply in advance: I approve the tickets you show me.
+  max_turns: 30
+  allowed_tools: [Agent, Bash, Read]
 graders:
   # The stand-in gh writes attempt-<n> for each publish, and fails every one.
   - type: file_exists

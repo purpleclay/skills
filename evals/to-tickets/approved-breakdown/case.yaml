@@ -10,7 +10,7 @@ execution:
 
     I won't be around to answer, so here is my reply in advance: I approve the first breakdown you show me.
   max_turns: 60
-  allowed_tools: [Bash, Read, Write, Edit]
+  allowed_tools: [Agent, Bash, Read, Write, Edit]
 graders:
   # The stand-in gh writes attempt-<n> for each publish.
   - type: file_exists
